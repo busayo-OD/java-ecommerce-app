@@ -12,4 +12,4 @@ The project is still at the development phase.
 - Lombok
 
 ## How to start the app
-You should be able to start the example application by executing com.busayo.ecommercebackend, which starts a webserver on port 8080 (http://localhost:8080). Also, the APIs can be viewed using the Swagger doc (http://localhost:8080//swagger-ui/#/) 
+You should be able to start the application by executing com.busayo.ecommercebackend, which starts a webserver on port 8080 (http://localhost:8080). Also, the APIs can be viewed using the Swagger doc (http://localhost:8080//swagger-ui/#/) 
