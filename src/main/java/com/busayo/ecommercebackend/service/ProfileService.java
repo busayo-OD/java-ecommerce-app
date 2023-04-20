@@ -7,8 +7,8 @@ import com.busayo.ecommercebackend.dto.user.UpdateProfileDto;
 import java.util.List;
 
 public interface ProfileService {
-    ProfileDto getProfile(String email);
-    Boolean editProfile(UpdateProfileDto updateProfileDto);
+    ProfileDto getProfile(Long id);
+    Boolean editProfile(UpdateProfileDto updateProfileDto, Long id);
     String changePassword(ChangePasswordDto changePasswordDto);
     List<ProfileDto> getAllProfiles();
 

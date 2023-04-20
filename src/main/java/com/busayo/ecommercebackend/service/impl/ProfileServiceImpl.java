@@ -34,21 +34,22 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public ProfileDto getProfile(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(email));
+    public ProfileDto getProfile(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
         return modelMapper.map(user, ProfileDto.class);
     }
 
     @Override
-    public Boolean editProfile(UpdateProfileDto updateProfileDto) {
-        User user = userRepository.findByEmail(updateProfileDto.getEmail())
-                .orElseThrow(() -> new UserNotFoundException(updateProfileDto));
+    public Boolean editProfile(UpdateProfileDto updateProfileDto, Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
         user.setFirstName(updateProfileDto.getFirstName());
         user.setLastName(updateProfileDto.getLastName());
         user.setAddress(updateProfileDto.getAddress());
         user.setAvatar(updateProfileDto.getAvatar());
-        user.setUsername(updateProfileDto.getUsername());
+//        user.setUsername(updateProfileDto.getUsername());
         user.setState(updateProfileDto.getState());
         user.setCountry(updateProfileDto.getCountry());
         user.setPhoneNumber(updateProfileDto.getPhoneNumber());

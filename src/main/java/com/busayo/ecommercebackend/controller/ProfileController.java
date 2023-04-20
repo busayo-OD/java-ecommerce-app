@@ -4,6 +4,7 @@ import com.busayo.ecommercebackend.dto.user.GetProfileDto;
 import com.busayo.ecommercebackend.dto.user.ProfileDto;
 import com.busayo.ecommercebackend.dto.user.UpdateProfileDto;
 import com.busayo.ecommercebackend.service.ProfileService;
+import com.busayo.ecommercebackend.utils.CurrentUserUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,18 +20,18 @@ public class ProfileController {
         this.profileService = profileService;
     }
 
-    @PostMapping("/get-profile")
+    @GetMapping("/get-profile")
     @ResponseBody
-    public ProfileDto getProfile(@RequestBody GetProfileDto getProfileDto){
-
-        return profileService.getProfile(getProfileDto.getEmail());
+    public ProfileDto getProfile(){
+        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        return profileService.getProfile(userId);
     }
 
     @PostMapping("/edit-profile")
     @ResponseBody
     public Boolean editProfile(@RequestBody UpdateProfileDto updateProfileDto){
-
-        return profileService.editProfile(updateProfileDto);
+        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        return profileService.editProfile(updateProfileDto, userId);
     }
 
     @GetMapping
