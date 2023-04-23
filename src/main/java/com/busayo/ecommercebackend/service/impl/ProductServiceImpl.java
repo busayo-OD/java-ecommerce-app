@@ -87,7 +87,13 @@ public class ProductServiceImpl implements ProductService {
         return mapToProductDto(product);
     }
 
+    @Override
+    public ProductReviewsDto getProductReviews(Long productId) {
+        Product product = productRepository.findById(productId)
 
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+        return mapToProductReviewsDto(product);
+    }
 
     @Override
     public ProductResponse2Dto getAllProductsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir) {
@@ -333,5 +339,11 @@ public class ProductServiceImpl implements ProductService {
         productDto.setPrice(product.getPrice());
         productDto.setDescription(product.getDescription());
         return productDto;
+    }
+
+    private ProductReviewsDto mapToProductReviewsDto(Product product) {
+        ProductReviewsDto productReviewsDto = new ProductReviewsDto();
+        productReviewsDto.setReviews(new ArrayList<>(product.getReviews()));
+        return productReviewsDto;
     }
 }

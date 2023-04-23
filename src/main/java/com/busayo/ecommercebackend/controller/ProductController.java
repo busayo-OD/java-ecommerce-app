@@ -32,7 +32,11 @@ public class ProductController {
         return  ResponseEntity.ok(product);
     }
 
-
+    @GetMapping("/reviews/{id}")
+    public ResponseEntity<ProductReviewsDto> getProductReviews(@PathVariable("id") Long productId){
+        ProductReviewsDto reviews = productService.getProductReviews(productId);
+        return  ResponseEntity.ok(reviews);
+    }
 
     @GetMapping("/pagination")
     public ProductResponse2Dto getAllProductsWithPaginationAndSorting(
@@ -87,8 +91,6 @@ public class ProductController {
                                                   @PathVariable("id") Long productIdId){
         return ResponseEntity.ok(productService.updateProduct(productDto, productIdId));
     }
-
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")

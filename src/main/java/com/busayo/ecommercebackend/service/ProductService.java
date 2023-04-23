@@ -9,6 +9,8 @@ public interface ProductService {
 
     ProductDto getProduct(Long productId);
 
+    ProductReviewsDto getProductReviews(Long productId);
+
     ProductResponse2Dto getAllProductsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir);
 
     List<ProductListDto> getAllProducts();
