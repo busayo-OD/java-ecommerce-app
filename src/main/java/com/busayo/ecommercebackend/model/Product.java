@@ -42,13 +42,4 @@ public class Product {
 
     private String status;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "product_reviews",
-            joinColumns = @JoinColumn(
-                    name = "product_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(
-                    name = "review_id", referencedColumnName = "id")
-    )
-    private Set<Review> reviews;
 }

@@ -1,14 +1,20 @@
 package com.busayo.ecommercebackend.service.impl;
 
 import com.busayo.ecommercebackend.dto.coupon.CouponDto;
+import com.busayo.ecommercebackend.dto.coupon.CouponResponseDto;
 import com.busayo.ecommercebackend.exception.CouponNotFoundException;
 import com.busayo.ecommercebackend.model.Coupon;
 import com.busayo.ecommercebackend.repository.CouponRepository;
 import com.busayo.ecommercebackend.service.CouponService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CouponServiceImpl implements CouponService {
@@ -61,6 +67,31 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
+    public CouponResponseDto getCouponsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Coupon> coupons = couponRepository.findByStatus(status, pageable);
+
+        List<Coupon> couponList = coupons.getContent();
+
+        List<CouponDto> content = couponList.stream().map(coupon -> mapToCouponDto(coupon)).collect(Collectors.toList());
+
+        CouponResponseDto couponResponseDto = new CouponResponseDto();
+        couponResponseDto.setContent(content);
+        couponResponseDto.setPageNo(coupons.getNumber());
+        couponResponseDto.setPageSize(coupons.getSize());
+        couponResponseDto.setTotalElements(coupons.getTotalElements());
+        couponResponseDto.setTotalPages(coupons.getTotalPages());
+        couponResponseDto.setLast(coupons.isLast());
+
+        return couponResponseDto;
+    }
+
+    @Override
     public Boolean updateCoupon(CouponDto couponDto, Long couponId) {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new CouponNotFoundException(couponId));
@@ -84,5 +115,19 @@ public class CouponServiceImpl implements CouponService {
         coupon.setStatus("Deleted");
         couponRepository.save(coupon);
         return true;
+    }
+
+    private CouponDto mapToCouponDto(Coupon coupon){
+
+        CouponDto couponDto = new CouponDto();
+        couponDto.setId(coupon.getId());
+        couponDto.setCouponCode(coupon.getCouponCode());
+        couponDto.setCouponStatus(coupon.getCouponStatus());
+        couponDto.setDiscountValue(coupon.getDiscountValue());
+        couponDto.setType(coupon.getType());
+        couponDto.setStartDate(coupon.getStartDate());
+        couponDto.setEndDate(coupon.getEndDate());
+
+        return couponDto;
     }
 }

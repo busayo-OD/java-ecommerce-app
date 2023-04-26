@@ -87,16 +87,16 @@ public class ProductServiceImpl implements ProductService {
         return mapToProductDto(product);
     }
 
-    @Override
-    public ProductReviewsDto getProductReviews(Long productId) {
-        Product product = productRepository.findById(productId)
+//    @Override
+//    public ProductReviewsDto getProductReviews(Long productId) {
+//        Product product = productRepository.findById(productId)
+//
+//                .orElseThrow(() -> new ProductNotFoundException(productId));
+//        return mapToProductReviewsDto(product);
+//    }
 
-                .orElseThrow(() -> new ProductNotFoundException(productId));
-        return mapToProductReviewsDto(product);
-    }
-
     @Override
-    public ProductResponse2Dto getAllProductsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir) {
+    public ProductResponse2Dto getProductsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.findAll(pageable);
+        Page<Product> products = productRepository.findByStatus(status, pageable);
 
         List<Product> productList = products.getContent();
 
@@ -120,6 +120,7 @@ public class ProductServiceImpl implements ProductService {
 
         return productResponseDto;
     }
+
 
     private List<Product> products = new ArrayList<>();
 
@@ -137,7 +138,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId,int pageNo, int pageSize, String sortBy, String sortDir) {
+    public ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, String status,int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
@@ -145,7 +146,7 @@ public class ProductServiceImpl implements ProductService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.findByCategoryId(categoryId, pageable);
+        Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, status, pageable);
 
         List<Product> productList = products.getContent();
 
@@ -178,14 +179,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse4Dto getProductsByProductTypeIdWithPaginationAndSorting(Long productTypeId, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public ProductResponse4Dto getProductsByProductTypeIdWithPaginationAndSorting(Long productTypeId, String status, int pageNo, int pageSize, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.findByProductTypeId(productTypeId, pageable);
+        Page<Product> products = productRepository.findByProductTypeIdAndStatus(productTypeId, status, pageable);
 
         List<Product> productList = products.getContent();
 
@@ -341,9 +342,4 @@ public class ProductServiceImpl implements ProductService {
         return productDto;
     }
 
-    private ProductReviewsDto mapToProductReviewsDto(Product product) {
-        ProductReviewsDto productReviewsDto = new ProductReviewsDto();
-        productReviewsDto.setReviews(new ArrayList<>(product.getReviews()));
-        return productReviewsDto;
-    }
 }

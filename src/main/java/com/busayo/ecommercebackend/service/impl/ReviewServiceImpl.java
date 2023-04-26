@@ -1,6 +1,8 @@
 package com.busayo.ecommercebackend.service.impl;
 
 import com.busayo.ecommercebackend.dto.review.ReviewDto;
+import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
+import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
 import com.busayo.ecommercebackend.exception.ReviewNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
 import com.busayo.ecommercebackend.model.Product;
@@ -11,6 +13,10 @@ import com.busayo.ecommercebackend.repository.ReviewRepository;
 import com.busayo.ecommercebackend.repository.UserRepository;
 import com.busayo.ecommercebackend.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,7 +35,6 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private UserRepository userRepository;
 
-
     @Override
     public Review addReview(ReviewDto reviewDto, Long id) {
         User user = userRepository.findById(id)
@@ -41,24 +46,23 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUsername(user.getUsername());
         review.setRating(reviewDto.getRating());
         review.setComment(reviewDto.getComment());
-        review.setStatus("Active");
 
         Product product = productRepository.findById(reviewDto.getProductId()).get();
+        review.setProduct(product);
+        review.setStatus("Active");
 
-        Review reviews1 = reviewRepository.save(review);
-        product.getReviews().add(reviews1);
-        productRepository.save(product);
+        reviewRepository.save(review);
+        return review;
 
-        return reviews1;
     }
 
-    public Boolean updateReview(ReviewDto reviewDto, Long id, Long reviewId){
+    public Boolean updateReview(ReviewDto reviewDto, Long id){
         try{
             User user = userRepository.findById(id)
                     .orElseThrow(() -> new UserNotFoundException(id));
             Long userId = user.getId();
 
-            Review review = reviewRepository.findById(reviewId).get();
+            Review review = reviewRepository.findById(reviewDto.getId()).get();
             Long reviewUserId = review.getUser().getId();
             if (userId.equals(reviewUserId)) {
                 review.setComment(reviewDto.getComment());
@@ -77,7 +81,7 @@ public class ReviewServiceImpl implements ReviewService {
     private List<Review> reviews = new ArrayList<>();
 
     @Override
-    public List<ReviewDto> getAllReviews() {
+    public List<ReviewInfoDto> getAllReviews() {
         reviews.clear();
         List<Review> allReviews = reviewRepository.findAll();
         for (Review review : allReviews) {
@@ -85,16 +89,41 @@ public class ReviewServiceImpl implements ReviewService {
                 reviews.add(review);
             }
         }
-        return reviews.stream().map((review) -> mapToReviewDto(review))
+        return reviews.stream().map((review) -> mapToReviewInfoDto(review))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public  ReviewDto getReview (Long reviewId) {
+    public ReviewInfoResponseDto getReviewsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Review> reviews = reviewRepository.findByStatus(status, pageable);
+
+        List<Review> reviewList = reviews.getContent();
+
+        List<ReviewInfoDto> content = reviewList.stream().map(review -> mapToReviewInfoDto(review)).collect(Collectors.toList());
+
+        ReviewInfoResponseDto reviewInfoResponseDto = new ReviewInfoResponseDto();
+        reviewInfoResponseDto.setContent(content);
+        reviewInfoResponseDto.setPageNo(reviews.getNumber());
+        reviewInfoResponseDto.setPageSize(reviews.getSize());
+        reviewInfoResponseDto.setTotalElements(reviews.getTotalElements());
+        reviewInfoResponseDto.setTotalPages(reviews.getTotalPages());
+        reviewInfoResponseDto.setLast(reviews.isLast());
+
+        return reviewInfoResponseDto;
+    }
+
+    @Override
+    public  ReviewInfoDto getReview (Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
 
                 .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-        return mapToReviewDto(review);
+        return mapToReviewInfoDto(review);
     }
 
     @Override
@@ -129,4 +158,16 @@ public class ReviewServiceImpl implements ReviewService {
 
         return reviewDto;
     }
+
+    private ReviewInfoDto mapToReviewInfoDto (Review review) {
+        ReviewInfoDto reviewInfoDto = new ReviewInfoDto();
+        reviewInfoDto.setId(review.getId());
+        reviewInfoDto.setUsername(review.getUsername());
+        reviewInfoDto.setProduct(review.getProduct().getName());
+        reviewInfoDto.setComment(review.getComment());
+        reviewInfoDto.setRating(review.getRating());
+
+        return reviewInfoDto;
+    }
+
 }

@@ -19,19 +19,16 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-//    @PostMapping
-//    public ResponseEntity<OrderResponseDto> placeOrder(@RequestBody OrderRequestDto orderRequest){
-//        return ResponseEntity.ok(orderService.placeOrder(orderRequest));
-//    }
 
-    @GetMapping("/pagination")
-    public OrderListResponseDto getAllOrdersWithPaginationAndSorting(
+    @GetMapping("/pagination/{status}")
+    public OrderListResponseDto getOrdersWithPaginationAndSorting(
+            @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return orderService.getAllOrdersWithPaginationAndSorting(pageNo, pageSize, sortBy, sortDir);
+        return orderService.getOrdersWithPaginationAndSorting(status, pageNo, pageSize, sortBy, sortDir);
     }
 
     @GetMapping

@@ -1,8 +1,11 @@
 package com.busayo.ecommercebackend.controller;
 
 import com.busayo.ecommercebackend.dto.review.ReviewDto;
+import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
+import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
 import com.busayo.ecommercebackend.model.Review;
 import com.busayo.ecommercebackend.service.ReviewService;
+import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,21 +31,31 @@ public class ReviewController {
         return new ResponseEntity<>(savedReview, HttpStatus.CREATED);
     }
 
-    @PutMapping("/edit/{id}")
-    public ResponseEntity<Boolean> updateReview(@RequestBody ReviewDto reviewDto,
-                                                @PathVariable("id") Long reviewId){
+    @PutMapping("/edit")
+    public ResponseEntity<Boolean> updateReview(@RequestBody ReviewDto reviewDto){
         Long userId = CurrentUserUtil.getCurrentUser().getId();
-        return ResponseEntity.ok(reviewService.updateReview(reviewDto, reviewId, userId));
+        return ResponseEntity.ok(reviewService.updateReview(reviewDto, userId));
     }
 
     @GetMapping
-    public ResponseEntity<List<ReviewDto>> getAllReviews(){
+    public ResponseEntity<List<ReviewInfoDto>> getAllReviews(){
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
 
+    @GetMapping("/pagination/{status}")
+    public ReviewInfoResponseDto getReviewsWithPaginationAndSorting(
+            @PathVariable String status,
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    ){
+        return reviewService.getReviewsWithPaginationAndSorting(status, pageNo, pageSize, sortBy, sortDir);
+    }
+
     @GetMapping("{id}")
-    public ResponseEntity<ReviewDto> getReview(@PathVariable("id") Long reviewId){
-        ReviewDto review = reviewService.getReview(reviewId);
+    public ResponseEntity<ReviewInfoDto> getReview(@PathVariable("id") Long reviewId){
+        ReviewInfoDto review = reviewService.getReview(reviewId);
         return  ResponseEntity.ok(review);
     }
 

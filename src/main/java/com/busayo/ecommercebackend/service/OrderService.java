@@ -8,7 +8,6 @@ import com.busayo.ecommercebackend.dto.order.OrderResponseDto;
 import java.util.List;
 
 public interface OrderService {
-    OrderResponseDto placeOrder(OrderRequestDto orderRequest);
-    OrderListResponseDto getAllOrdersWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir);
+    OrderListResponseDto getOrdersWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir);
     List<OrderListDto> getAllOrders();
 }

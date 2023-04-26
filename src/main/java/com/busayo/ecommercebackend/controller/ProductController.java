@@ -32,20 +32,15 @@ public class ProductController {
         return  ResponseEntity.ok(product);
     }
 
-    @GetMapping("/reviews/{id}")
-    public ResponseEntity<ProductReviewsDto> getProductReviews(@PathVariable("id") Long productId){
-        ProductReviewsDto reviews = productService.getProductReviews(productId);
-        return  ResponseEntity.ok(reviews);
-    }
-
-    @GetMapping("/pagination")
-    public ProductResponse2Dto getAllProductsWithPaginationAndSorting(
+    @GetMapping("/pagination/{status}")
+    public ProductResponse2Dto getProductsWithPaginationAndSorting(
+            @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return productService.getAllProductsWithPaginationAndSorting(pageNo, pageSize, sortBy, sortDir);
+        return productService.getProductsWithPaginationAndSorting(status,pageNo, pageSize, sortBy, sortDir);
     }
 
     @GetMapping
@@ -53,15 +48,16 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    @GetMapping("/category/pagination/{id}")
+    @GetMapping("/category/pagination/{id}/{status}")
     public ProductResponse3Dto getProductsByCategoryWithPaginationAndSorting(
             @PathVariable("id") Long categoryId,
+            @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return productService.getProductsByCategoryIdWithPaginationAndSorting(categoryId,pageNo, pageSize, sortBy, sortDir);
+        return productService.getProductsByCategoryIdWithPaginationAndSorting(categoryId, status,pageNo, pageSize, sortBy, sortDir);
     }
 
     @GetMapping("/category/{id}")
@@ -69,15 +65,16 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByCategoryId(categoryId));
     }
 
-    @GetMapping("/product-type/pagination/{id}")
+    @GetMapping("/product-type/pagination/{id}/{status}")
     public ProductResponse4Dto getProductsByProductTypeWithPaginationAndSorting(
             @PathVariable("id") Long productTypeId,
+            @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return productService.getProductsByProductTypeIdWithPaginationAndSorting(productTypeId,pageNo, pageSize, sortBy, sortDir);
+        return productService.getProductsByProductTypeIdWithPaginationAndSorting(productTypeId, status, pageNo, pageSize, sortBy, sortDir);
     }
 
     @GetMapping("/product-type/{id}")
@@ -88,7 +85,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/edit/{id}")
     public ResponseEntity<Boolean> updateProduct(@RequestBody ProductDto productDto,
-                                                  @PathVariable("id") Long productIdId){
+                                                 @PathVariable("id") Long productIdId){
         return ResponseEntity.ok(productService.updateProduct(productDto, productIdId));
     }
 

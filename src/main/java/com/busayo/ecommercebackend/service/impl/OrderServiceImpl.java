@@ -35,38 +35,15 @@ public class OrderServiceImpl implements OrderService {
         this.orderDetailsRepository = orderDetailsRepository;
     }
 
-//    Disclaimer!!!!!
-
-//    The APIs below were created to test out the Order listing feature in the admin dashboard.
-
-
     @Override
-    public OrderResponseDto placeOrder(OrderRequestDto orderRequest) {
-        Order order = orderRequest.getOrder();
-        order.setOrderStatus("In Progress");
-        order.setPaymentStatus("No");
-        int min = 1000;
-        int max = 5000;
-        int randomNum = ThreadLocalRandom.current().nextInt(min, max + 1);
-        order.setOrderNumber(randomNum);
-        orderRepository.save(order);
-
-        OrderResponseDto orderResponse = new OrderResponseDto();
-        orderResponse.setOrderNumber(order.getOrderNumber());
-        orderResponse.setStatus(order.getOrderStatus());
-        orderResponse.setMessage("Success");
-        return orderResponse;
-    }
-
-    @Override
-    public OrderListResponseDto getAllOrdersWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir) {
+    public OrderListResponseDto getOrdersWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Order> orders = orderRepository.findAll(pageable);
+        Page<Order> orders = orderRepository.findByStatus(status, pageable);
 
         List<Order> orderList = orders.getContent();
 
@@ -100,8 +77,6 @@ public class OrderServiceImpl implements OrderService {
         orderListDto.setAmount(order.getAmount());
         orderListDto.setCustomerName(order.getCustomerName());
         orderListDto.setAmount(order.getAmount());
-//        int orderDetail = orderDetailsRepository.findById()
-//        orderListDto.setQuantity();
         orderListDto.setOrderDate(order.getOrderDate());
         return orderListDto;
     }

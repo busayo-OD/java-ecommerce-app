@@ -9,17 +9,15 @@ public interface ProductService {
 
     ProductDto getProduct(Long productId);
 
-    ProductReviewsDto getProductReviews(Long productId);
-
-    ProductResponse2Dto getAllProductsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse2Dto getProductsWithPaginationAndSorting(String status,int pageNo, int pageSize, String sortBy, String sortDir);
 
     List<ProductListDto> getAllProducts();
 
-    ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
 
     List<ProductByCategoryDto> getProductsByCategoryId(Long categoryId);
 
-    ProductResponse4Dto getProductsByProductTypeIdWithPaginationAndSorting(Long productTypeId, int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse4Dto getProductsByProductTypeIdWithPaginationAndSorting(Long productTypeId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
 
     List<ProductByProductTypeDto> getProductsByProductTypeId(Long productTypeId);
 
@@ -28,7 +26,6 @@ public interface ProductService {
     Boolean updateProduct(ProductDto productDto, Long productId);
 
     Boolean deleteProduct(Long productId);
-
 
 
 }
