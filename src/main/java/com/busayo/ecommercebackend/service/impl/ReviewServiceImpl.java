@@ -36,14 +36,13 @@ public class ReviewServiceImpl implements ReviewService {
     private UserRepository userRepository;
 
     @Override
-    public Review addReview(ReviewDto reviewDto, Long id) {
+    public Boolean addReview(ReviewDto reviewDto, Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         Review review = new Review();
 
         review.setUser(user);
-        review.setUsername(user.getUsername());
         review.setRating(reviewDto.getRating());
         review.setComment(reviewDto.getComment());
 
@@ -52,7 +51,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setStatus("Active");
 
         reviewRepository.save(review);
-        return review;
+        return true;
 
     }
 
@@ -149,25 +148,17 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
-    private ReviewDto mapToReviewDto (Review review) {
-        ReviewDto reviewDto = new ReviewDto();
-        reviewDto.setId(review.getId());
-        reviewDto.setUsername(review.getUsername());
-        reviewDto.setComment(review.getComment());
-        reviewDto.setRating(review.getRating());
-
-        return reviewDto;
-    }
-
     private ReviewInfoDto mapToReviewInfoDto (Review review) {
         ReviewInfoDto reviewInfoDto = new ReviewInfoDto();
         reviewInfoDto.setId(review.getId());
-        reviewInfoDto.setUsername(review.getUsername());
+        reviewInfoDto.setUsername(review.getUser().getUsername());
         reviewInfoDto.setProduct(review.getProduct().getName());
         reviewInfoDto.setComment(review.getComment());
         reviewInfoDto.setRating(review.getRating());
+        reviewInfoDto.setReviewDate(review.getReviewDate());
 
         return reviewInfoDto;
     }
+
 
 }

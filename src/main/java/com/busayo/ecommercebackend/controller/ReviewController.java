@@ -3,11 +3,9 @@ package com.busayo.ecommercebackend.controller;
 import com.busayo.ecommercebackend.dto.review.ReviewDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
-import com.busayo.ecommercebackend.model.Review;
 import com.busayo.ecommercebackend.service.ReviewService;
 import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,11 +22,10 @@ public class ReviewController {
     }
 
     @PostMapping
-    public ResponseEntity<Review> addReview(@RequestBody ReviewDto reviewDto){
+    public Boolean addReview(@RequestBody ReviewDto reviewDto){
         Long userId = CurrentUserUtil.getCurrentUser().getId();
 
-        Review savedReview = reviewService.addReview(reviewDto, userId);
-        return new ResponseEntity<>(savedReview, HttpStatus.CREATED);
+        return reviewService.addReview(reviewDto, userId);
     }
 
     @PutMapping("/edit")
