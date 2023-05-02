@@ -155,7 +155,8 @@ public class ReviewServiceImpl implements ReviewService {
         reviewInfoDto.setProduct(review.getProduct().getName());
         reviewInfoDto.setComment(review.getComment());
         reviewInfoDto.setRating(review.getRating());
-        reviewInfoDto.setReviewDate(review.getReviewDate());
+        reviewInfoDto.setCreatedOn(review.getCreatedOn());
+        reviewInfoDto.setUpdatedOn(review.getUpdatedOn());
 
         return reviewInfoDto;
     }

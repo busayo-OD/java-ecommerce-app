@@ -19,6 +19,8 @@ public class ReviewInfoDto {
 
     private String comment;
 
-    private Date reviewDate;
+    private Date createdOn;
+
+    private Date updatedOn;
 
 }
