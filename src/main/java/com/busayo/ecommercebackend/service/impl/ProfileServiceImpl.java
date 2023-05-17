@@ -41,6 +41,13 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    public ProfileDto getCustomerProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+        return modelMapper.map(user, ProfileDto.class);
+    }
+
+    @Override
     public Boolean editProfile(UpdateProfileDto updateProfileDto, Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -98,6 +105,5 @@ public class ProfileServiceImpl implements ProfileService {
         profile.setEmail(user.getEmail());
         return profile;
     }
-
 
 }

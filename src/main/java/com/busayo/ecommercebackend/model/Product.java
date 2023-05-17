@@ -24,9 +24,14 @@ public class Product {
     private String name;
 
     private String description;
+
     private double price;
+
     private String image;
+
     private int stock;
+
+    private String colour;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")

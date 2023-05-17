@@ -30,12 +30,12 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public Brand addBrand(BrandDto brandDto) {
+    public void addBrand(BrandDto brandDto) {
         Brand brand = new Brand();
         brand.setName(brandDto.getName().toUpperCase());
         brand.setStatus("Active");
+        brand.setLogo(brandDto.getLogo());
         brandRepository.save(brand);
-        return brand;
     }
 
     @Override
@@ -87,12 +87,11 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public Boolean deleteBrand(Long brandId) {
+    public void deleteBrand(Long brandId) {
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new BrandNotFoundException(brandId));
 
         brand.setStatus("Deleted");
         brandRepository.save(brand);
-        return true;
     }
 }

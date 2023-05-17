@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,8 @@ public class WishlistServiceImpl implements WishlistService {
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         wishlist.setProduct(product);
         wishlist.setUser(user);
+        wishlist.setCreatedDate(new Date());
+        wishlist.setWishlistType(wishlistDto.getWishlistType());
         wishlistRepository.save(wishlist);
         return true;
     }
@@ -102,6 +105,8 @@ public class WishlistServiceImpl implements WishlistService {
         MyWishlistDto myWishlistDto = new MyWishlistDto();
         myWishlistDto.setId(wishlist.getId());
         myWishlistDto.setProduct(wishlist.getProduct());
+        myWishlistDto.setWishlistType(wishlist.getWishlistType());
+        myWishlistDto.setCreatedDate(wishlist.getCreatedDate());
 
         return myWishlistDto;
     }
@@ -112,6 +117,8 @@ public class WishlistServiceImpl implements WishlistService {
         wishlistInfoDto.setId(wishlist.getId());
         wishlistInfoDto.setProduct(wishlist.getProduct());
         wishlistInfoDto.setUsername(wishlist.getUser().getUsername());
+        wishlistInfoDto.setWishlistType(wishlist.getWishlistType());
+        wishlistInfoDto.setCreatedDate(wishlist.getCreatedDate());
 
         return wishlistInfoDto;
     }

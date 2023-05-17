@@ -23,4 +23,5 @@ public class Customer {
     @JoinColumn(name = "user_id")
     private User user;
 
+
 }

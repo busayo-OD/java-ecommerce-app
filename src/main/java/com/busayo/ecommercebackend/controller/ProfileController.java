@@ -6,6 +6,7 @@ import com.busayo.ecommercebackend.dto.user.UpdateProfileDto;
 import com.busayo.ecommercebackend.service.ProfileService;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,11 +21,19 @@ public class ProfileController {
         this.profileService = profileService;
     }
 
-    @GetMapping("/get-profile")
+    @GetMapping("/my-profile")
     @ResponseBody
     public ProfileDto getProfile(){
         Long userId = CurrentUserUtil.getCurrentUser().getId();
         return profileService.getProfile(userId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/customer-profile")
+    @ResponseBody
+    public ProfileDto getCustomerProfile(@RequestBody GetProfileDto getProfileDto){
+
+        return profileService.getCustomerProfile(getProfileDto.getEmail());
     }
 
     @PostMapping("/edit-profile")
@@ -34,8 +43,4 @@ public class ProfileController {
         return profileService.editProfile(updateProfileDto, userId);
     }
 
-    @GetMapping
-    public ResponseEntity<List<ProfileDto>> getAllProfiles(){
-        return ResponseEntity.ok(profileService.getAllProfiles());
-    }
 }

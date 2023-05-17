@@ -1,7 +1,9 @@
 package com.busayo.ecommercebackend.service.impl;
 
+import com.busayo.ecommercebackend.dto.cart.AddToCartDto;
 import com.busayo.ecommercebackend.dto.cart.CartDto;
-import com.busayo.ecommercebackend.dto.cart.MyCartDto;
+import com.busayo.ecommercebackend.dto.cart.CartItemDto;
+import com.busayo.ecommercebackend.exception.CartItemNotFoundException;
 import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
 import com.busayo.ecommercebackend.model.Cart;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -31,48 +32,64 @@ public class CartServiceImpl implements CartService {
     private UserRepository userRepository;
 
     @Override
-    public Boolean addProductToCart(CartDto cartDto, Long id) {
+    public void addProductToCart(AddToCartDto addToCartDto, Long userId) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Cart cart = new Cart();
 
         cart.setUser(user);
-        Product product = productRepository.findById(cartDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(id));
+        Long productId = addToCartDto.getProductId();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
         cart.setProduct(product);
-        cart.setStatus("Active");
-        cart.setQuantity(cartDto.getQuantity());
-
-        return true;
+        cart.setQuantity(addToCartDto.getQuantity());
+        cartRepository.save(cart);
     }
 
-    private List<Cart> cartItems = new ArrayList<>();
+    public void updateCartItem(AddToCartDto addToCartDto, Long userId){
+        Long cartId = addToCartDto.getId();
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new CartItemNotFoundException(cartId));
+
+//        Long productId = addToCartDto.getProductId();
+//        Product product = productRepository.findById(addToCartDto.getProductId())
+//                .orElseThrow(() -> new ProductNotFoundException(productId));
+        cart.setQuantity(addToCartDto.getQuantity());
+        cartRepository.save(cart);
+    }
 
     @Override
-    public List<MyCartDto> getMyCart(Long id) {
-        cartItems.clear();
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+    public CartDto getMyCart(Long userId) {
 
-        List<Cart> allCartItems = cartRepository.findAll();
-        for (Cart cartItem : allCartItems) {
-            if ((allCartItems != null) && (cartItem.getUser().equals(user))) {
-                cartItems.add(cartItem);
-            }
+        List<Cart> cartList = cartRepository.findByUserId(userId);
+        List<CartItemDto> cartItems = new ArrayList<>();
+        for (Cart cart:cartList){
+            CartItemDto cartItemDto = getDtoFromCart(cart);
+            cartItems.add(cartItemDto);
         }
-        return cartItems.stream().map((cart) -> mapToMyCartDto(cart))
-                .collect(Collectors.toList());
+        double total = 0;
+        for (CartItemDto cartItemDto :cartItems){
+            total += (cartItemDto.getProduct().getPrice()* cartItemDto.getQuantity());
+        }
+        return new CartDto(cartItems,total);
     }
 
-    private MyCartDto mapToMyCartDto (Cart cart) {
+    public static CartItemDto getDtoFromCart(Cart cart) {
+        return new CartItemDto(cart);
+    }
 
-        MyCartDto myCartDto = new MyCartDto();
-        myCartDto.setId(cart.getId());
-        myCartDto.setProduct(cart.getProduct());
+    @Override
+    public void deleteUserCartItems(Long userId) {
 
-        return myCartDto;
+        cartRepository.deleteByUserId(userId);
+    }
+
+    @Override
+    public void deleteCartItem(Long id, Long userId) throws CartItemNotFoundException {
+        if (!cartRepository.existsById(id))
+            throw new CartItemNotFoundException("Cart id is invalid : " + id);
+        cartRepository.deleteById(id);
     }
 }
-

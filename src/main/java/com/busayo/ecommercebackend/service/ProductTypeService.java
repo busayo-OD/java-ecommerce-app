@@ -11,6 +11,6 @@ public interface ProductTypeService {
     ProductType getProductType(Long productTypeId);
     List<ProductType> getAllProductTypes();
     Boolean updateProductType(ProductTypeDto productTypeDto, Long productTypeId);
-    Boolean deleteProductType(Long productTypeId);
+    void deleteProductType(Long productTypeId);
     List<ProductTypeNoOfProductsDto> getProductTypeNoOfEachProduct();
 }

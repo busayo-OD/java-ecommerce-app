@@ -1,12 +1,12 @@
 package com.busayo.ecommercebackend.service;
 
+import com.busayo.ecommercebackend.dto.cart.AddToCartDto;
 import com.busayo.ecommercebackend.dto.cart.CartDto;
-import com.busayo.ecommercebackend.dto.cart.MyCartDto;
-
-import java.util.List;
 
 public interface CartService {
 
-    Boolean addProductToCart(CartDto cartDto, Long id);
-    List<MyCartDto> getMyCart(Long id);
+    void addProductToCart(AddToCartDto addToCartDto, Long userId);
+    CartDto getMyCart(Long userId);
+    void deleteUserCartItems(Long userId);
+    void deleteCartItem(Long id, Long userId);
 }

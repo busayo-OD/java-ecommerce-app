@@ -1,14 +1,12 @@
 package com.busayo.ecommercebackend.dto.cart;
 
-import com.busayo.ecommercebackend.model.Product;
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class MyCartDto {
-
+public class AddToCartDto {
     private Long id;
-
-    private Product product;
+    private Long productId;
+    private int quantity;
 }

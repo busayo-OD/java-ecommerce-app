@@ -12,5 +12,6 @@ public interface ReviewService {
     List<ReviewInfoDto> getAllReviews();
     ReviewInfoResponseDto getReviewsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir);
     ReviewInfoDto getReview (Long reviewId);
-    Boolean deleteReview(Long reviewId, Long id);
+    void deleteReview(Long reviewId, Long id);
+    List<ReviewInfoDto> getProductReviews(Long productId, String status);
 }

@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ProfileService {
     ProfileDto getProfile(Long id);
+    ProfileDto getCustomerProfile(String email);
     Boolean editProfile(UpdateProfileDto updateProfileDto, Long id);
     String changePassword(ChangePasswordDto changePasswordDto);
     List<ProfileDto> getAllProfiles();

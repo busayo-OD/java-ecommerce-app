@@ -10,4 +10,6 @@ public class WishlistDto {
     private Long id;
 
     private Long productId;
+
+    private String wishlistType;
 }

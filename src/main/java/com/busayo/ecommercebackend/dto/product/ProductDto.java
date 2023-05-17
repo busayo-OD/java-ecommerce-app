@@ -21,5 +21,6 @@ public class ProductDto {
     private String brand;
     private String productType;
     private String category;
+    private String colour;
 
 }

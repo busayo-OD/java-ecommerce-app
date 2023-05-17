@@ -21,11 +21,8 @@ public interface ProductService {
 
     List<ProductByProductTypeDto> getProductsByProductTypeId(Long productTypeId);
 
-//    ProductResponse1Dto getAllProducts(int pageNo, int pageSize, String sortBy, String sortDir);
-
     Boolean updateProduct(ProductDto productDto, Long productId);
 
     Boolean deleteProduct(Long productId);
-
 
 }

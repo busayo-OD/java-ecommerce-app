@@ -94,13 +94,12 @@ public class ProductTypeServiceImpl implements ProductTypeService {
     }
 
     @Override
-    public Boolean deleteProductType(Long productTypeId) {
+    public void deleteProductType(Long productTypeId) {
         ProductType productType = productTypeRepository.findById(productTypeId)
                 .orElseThrow(() -> new ProductTypeNotFoundException(productTypeId));
 
         productType.setStatus("Deleted");
         productTypeRepository.save(productType);
-        return true;
     }
 
     @Override

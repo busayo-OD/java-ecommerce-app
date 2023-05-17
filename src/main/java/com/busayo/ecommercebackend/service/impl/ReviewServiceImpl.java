@@ -3,11 +3,14 @@ package com.busayo.ecommercebackend.service.impl;
 import com.busayo.ecommercebackend.dto.review.ReviewDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
+import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.exception.ReviewNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
+import com.busayo.ecommercebackend.model.Notification;
 import com.busayo.ecommercebackend.model.Product;
 import com.busayo.ecommercebackend.model.Review;
 import com.busayo.ecommercebackend.model.User;
+import com.busayo.ecommercebackend.repository.NotificationRepository;
 import com.busayo.ecommercebackend.repository.ProductRepository;
 import com.busayo.ecommercebackend.repository.ReviewRepository;
 import com.busayo.ecommercebackend.repository.UserRepository;
@@ -35,6 +38,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     @Override
     public Boolean addReview(ReviewDto reviewDto, Long id) {
         User user = userRepository.findById(id)
@@ -46,11 +52,22 @@ public class ReviewServiceImpl implements ReviewService {
         review.setRating(reviewDto.getRating());
         review.setComment(reviewDto.getComment());
 
-        Product product = productRepository.findById(reviewDto.getProductId()).get();
+        Long productId = reviewDto.getProductId();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
         review.setProduct(product);
         review.setStatus("Active");
 
         reviewRepository.save(review);
+
+        Notification notification = new Notification();
+
+        notification.setImage(user.getAvatar());
+        notification.setStatus("Active");
+        notification.setTitle("");
+        notification.setText(user.getUsername() + " submitted a review for " + product.getName());
+
+        notificationRepository.save(notification);
         return true;
 
     }
@@ -61,7 +78,9 @@ public class ReviewServiceImpl implements ReviewService {
                     .orElseThrow(() -> new UserNotFoundException(id));
             Long userId = user.getId();
 
-            Review review = reviewRepository.findById(reviewDto.getId()).get();
+            Long reviewId = reviewDto.getId();
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(() -> new ReviewNotFoundException(reviewId));
             Long reviewUserId = review.getUser().getId();
             if (userId.equals(reviewUserId)) {
                 review.setComment(reviewDto.getComment());
@@ -126,27 +145,36 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Boolean deleteReview(Long reviewId, Long id) {
-        try{
-            User userId = userRepository.findById(id)
-                    .orElseThrow(() -> new UserNotFoundException(id));
+    public void deleteReview(Long reviewId, Long id) {
+        User userId = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
 
-            Review review = reviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-            Long reviewUserId = review.getUser().getId();
-            if (userId.equals(reviewUserId)) {
-                review.setStatus("Deleted");
-                reviewRepository.save(review);
-                return true;
-            }
-            else {
-                return false;
-            }
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+        Long reviewUserId = review.getUser().getId();
+        if (!userId.equals(reviewUserId)) {
 
-        }catch (NullPointerException e){
-            return false;
+        } else {
+            reviewRepository.delete(review);
         }
     }
+
+    @Override
+    public List<ReviewInfoDto> getProductReviews(Long productId, String status) {
+        List<Review> productReviews = reviewRepository.findByProductIdAndStatus(productId, status);
+        return productReviews.stream().map((review) -> mapToReviewInfoDto(review))
+                .collect(Collectors.toList());
+    }
+
+//    private ReviewDto mapToReviewDto (Review review) {
+//        ReviewDto reviewDto = new ReviewDto();
+//        reviewDto.setId(review.getId());
+//        reviewDto.setUsername(review.getUser().getUsername());
+//        reviewDto.setComment(review.getComment());
+//        reviewDto.setRating(review.getRating());
+//
+//        return reviewDto;
+//    }
 
     private ReviewInfoDto mapToReviewInfoDto (Review review) {
         ReviewInfoDto reviewInfoDto = new ReviewInfoDto();
@@ -160,6 +188,4 @@ public class ReviewServiceImpl implements ReviewService {
 
         return reviewInfoDto;
     }
-
-
 }

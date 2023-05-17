@@ -21,7 +21,7 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    @PostMapping
+    @PostMapping("/add")
     public Boolean addReview(@RequestBody ReviewDto reviewDto){
         Long userId = CurrentUserUtil.getCurrentUser().getId();
 
@@ -56,9 +56,17 @@ public class ReviewController {
         return  ResponseEntity.ok(review);
     }
 
-    @GetMapping("/delete/{id}")
-    public ResponseEntity<Boolean> deleteReview(@PathVariable Long id) {
+    @GetMapping("/product/{id}/{status}")
+    public ResponseEntity<List<ReviewInfoDto>> getProductReviews(
+            @PathVariable("id") Long productId,
+            @PathVariable String status){
+        return ResponseEntity.ok(reviewService.getProductReviews(productId, status));
+
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public void deleteReview(@PathVariable Long id) {
         Long userId = CurrentUserUtil.getCurrentUser().getId();
-        return ResponseEntity.ok(reviewService.deleteReview(id, userId));
+        reviewService.deleteReview(id, userId);
     }
 }

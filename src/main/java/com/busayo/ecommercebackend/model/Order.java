@@ -25,22 +25,12 @@ public class Order {
     @Column(name = "order_number", nullable = false)
     private int orderNumber;
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(name = "amount", nullable = false)
     private double amount;
-
-    @Column(name = "customer_name", length = 256, nullable = false)
-    private String customerName;
-
-    @Column(name = "customer_address", length = 256, nullable = false)
-    private String customerAddress;
-
-    private String state;
-
-    @Column(name = "customer_email", length = 128, nullable = false)
-    private String customerEmail;
-
-    @Column(name = "customer_phone", length = 128, nullable = false)
-    private String customerPhone;
 
     @Column(name = "order_status", nullable = false)
     private String orderStatus;
@@ -56,7 +46,11 @@ public class Order {
 
     private String status;
 
-    @OneToMany(mappedBy = "order")
-    private Set<OrderDetail> orderDetails;
+    @Column(name = "state")
+    private String state;
+
+    @Column(name = "shipping_address")
+    private String shippingAddress;
+
 }
 

@@ -7,6 +7,7 @@ import com.busayo.ecommercebackend.service.WishlistService;
 import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,13 +22,14 @@ public class WishlistController {
         this.wishlistService = wishlistService;
     }
 
-    @PostMapping
+    @PostMapping("/add")
     public Boolean addProductToWishlist(@RequestBody WishlistDto wishlistDto){
         Long userId = CurrentUserUtil.getCurrentUser().getId();
 
         return wishlistService.addProductToWishlist(wishlistDto, userId);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/my-wishlist")
     public ResponseEntity<List<MyWishlistDto>> getMyWishlist(){
         Long userId = CurrentUserUtil.getCurrentUser().getId();

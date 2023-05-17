@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/orderDetails")
+@RequestMapping("/order-items")
 public class OrderDetailsController {
 
     private final OrderDetailsService orderDetailsService;

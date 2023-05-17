@@ -28,8 +28,8 @@ public class OrderDetail {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(name = "total")
-    private double total;
+    @Column(name = "sub_total")
+    private double subTotal;
 
     @Column(name = "quantity")
     private int quantity;

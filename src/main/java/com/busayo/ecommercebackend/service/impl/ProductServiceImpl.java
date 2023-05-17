@@ -48,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
         product.setName(productDto.getName());
         product.setStock(productDto.getStock());
         product.setPrice(productDto.getPrice());
+        product.setColour(productDto.getColour());
         product.setStatus("Active");
         product.setImage(productDto.getImage());
         product.setDescription(productDto.getDescription());
@@ -64,17 +65,6 @@ public class ProductServiceImpl implements ProductService {
         Brand brand = brandRepository.findByName(brandName);
         product.setBrand(brand);
 
-//        Brand brand = brandRepository.findByName(productDto.getBrand().trim().toUpperCase());
-//        if (brand != null) {
-//            product.setBrand(brand);
-//        }
-//        else {
-//            Brand brand1 = new Brand();
-//            brand1.setName(productDto.getBrand().trim().toUpperCase());
-//            brand1.setStatus("Active");
-//            brandRepository.save(brand1);
-//            product.setBrand(brand1);
-//        }
         productRepository.save(product);
         return  true;
     }
@@ -86,14 +76,6 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         return mapToProductDto(product);
     }
-
-//    @Override
-//    public ProductReviewsDto getProductReviews(Long productId) {
-//        Product product = productRepository.findById(productId)
-//
-//                .orElseThrow(() -> new ProductNotFoundException(productId));
-//        return mapToProductReviewsDto(product);
-//    }
 
     @Override
     public ProductResponse2Dto getProductsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
@@ -210,32 +192,6 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
-//    @Override
-//    public ProductResponse1Dto getAllProducts(int pageNo, int pageSize, String sortBy, String sortDir) {
-//        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
-//                : Sort.by(sortBy).descending();
-//
-//
-//        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-//
-//        Page<Product> products = productRepository.findAll(pageable);
-//
-//        List<Product> productList = products.getContent();
-//
-//
-//        List<Product> content = productList;
-//
-//        ProductResponse1Dto productResponse1Dto = new ProductResponse1Dto();
-//        productResponse1Dto.setContent(content);
-//        productResponse1Dto.setPageNo(products.getNumber());
-//        productResponse1Dto.setPageSize(products.getSize());
-//        productResponse1Dto.setTotalElements(products.getTotalElements());
-//        productResponse1Dto.setTotalPages(products.getTotalPages());
-//        productResponse1Dto.setLast(products.isLast());
-//
-//        return productResponse1Dto;
-//    }
-
     @Override
     public Boolean updateProduct(ProductDto productDto, Long productId) {
         Product product = productRepository.findById(productId)
@@ -259,18 +215,6 @@ public class ProductServiceImpl implements ProductService {
         Brand brand = brandRepository.findByName(brandName);
         product.setBrand(brand);
 
-//        Brand brand = brandRepository.findByName(productDto.getBrand().trim().toUpperCase());
-//        if (brand != null) {
-//            product.setBrand(brand);
-//        }
-//        else {
-//            Brand brand1 = new Brand();
-//            brand1.setName(productDto.getBrand().trim().toUpperCase());
-//            brand1.setStatus("Active");
-//
-////            brand1.setProductType(productTypeRepository.findByName(productDto.getProductType()));
-//            brandRepository.save(brand1);
-//        }
         productRepository.save(product);
         return true;
     }

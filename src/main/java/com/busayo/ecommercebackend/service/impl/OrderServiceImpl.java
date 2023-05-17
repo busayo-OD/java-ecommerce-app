@@ -1,12 +1,15 @@
 package com.busayo.ecommercebackend.service.impl;
 
-import com.busayo.ecommercebackend.dto.order.OrderListDto;
-import com.busayo.ecommercebackend.dto.order.OrderListResponseDto;
-import com.busayo.ecommercebackend.dto.order.OrderRequestDto;
-import com.busayo.ecommercebackend.dto.order.OrderResponseDto;
+import com.busayo.ecommercebackend.dto.cart.CartDto;
+import com.busayo.ecommercebackend.dto.cart.CartItemDto;
+import com.busayo.ecommercebackend.dto.order.*;
+import com.busayo.ecommercebackend.exception.UserNotFoundException;
 import com.busayo.ecommercebackend.model.*;
+import com.busayo.ecommercebackend.repository.NotificationRepository;
 import com.busayo.ecommercebackend.repository.OrderDetailsRepository;
 import com.busayo.ecommercebackend.repository.OrderRepository;
+import com.busayo.ecommercebackend.repository.UserRepository;
+import com.busayo.ecommercebackend.service.CartService;
 import com.busayo.ecommercebackend.service.OrderService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,23 +19,83 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository orderRepository;
-    private final OrderDetailsRepository orderDetailsRepository;
+    @Autowired
+    private  OrderRepository orderRepository;
+
+    @Autowired
+    private OrderDetailsRepository orderDetailsRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
-    public OrderServiceImpl(OrderRepository orderRepository,
-                            OrderDetailsRepository orderDetailsRepository) {
-        this.orderRepository = orderRepository;
-        this.orderDetailsRepository = orderDetailsRepository;
+    @Autowired
+    private CartService cartService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Override
+    public void placeOrder(Long userId, PlaceOrderDto placeOrderDto) {
+
+        CartDto cartDto = cartService.getMyCart(userId);
+
+        List<CartItemDto> cartItemDtoList = cartDto.getCartItems();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // create the order and save it
+        Order newOrder = new Order();
+        newOrder.setOrderDate(new Date());
+        newOrder.setUser(user);
+        newOrder.setAmount(cartDto.getTotal());
+        newOrder.setOrderStatus("In Progress");
+        newOrder.setPaymentStatus("NO");
+        newOrder.setStatus("Active");
+        newOrder.setShippingAddress(placeOrderDto.getShippingAddress());
+        newOrder.setState(placeOrderDto.getState());
+
+        int min = 1000;
+        int max = 5000;
+        int randomNum = ThreadLocalRandom.current().nextInt(min, max + 1);
+        newOrder.setOrderNumber(randomNum);
+        orderRepository.save(newOrder);
+
+        for (CartItemDto cartItemDto : cartItemDtoList) {
+            // create orderItem and save each one
+            OrderDetail orderItem = new OrderDetail();
+//            orderItem.setCreatedDate(new Date());
+            orderItem.setSubTotal(cartItemDto.getProduct().getPrice() * cartItemDto.getQuantity());
+            orderItem.setProduct(cartItemDto.getProduct());
+            orderItem.setQuantity(cartItemDto.getQuantity());
+            orderItem.setOrder(newOrder);
+            orderItem.setStatus("Active");
+            // add to order item list
+            orderDetailsRepository.save(orderItem);
+        }
+        cartService.deleteUserCartItems(userId);
+
+        Notification notification = new Notification();
+
+        notification.setImage(user.getAvatar());
+        notification.setStatus("Active");
+        notification.setTitle("");
+        notification.setText("New order by " + user.getUsername() + " with order number " + newOrder.getOrderNumber());
+
+        notificationRepository.save(notification);
     }
 
     @Override
@@ -67,6 +130,13 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MyOrdersDto> getMyOrders(Long userId) {
+        List<Order> myOrders = orderRepository.findByUserId(userId);
+        return myOrders.stream().map((order) -> mapToMyOrdersDto(order))
+                .collect(Collectors.toList());
+    }
+
     private OrderListDto mapToOrderListDto(Order order){
 
         OrderListDto orderListDto = new OrderListDto();
@@ -74,10 +144,21 @@ public class OrderServiceImpl implements OrderService {
         orderListDto.setOrderNumber(order.getOrderNumber());
         orderListDto.setOrderStatus(order.getOrderStatus());
         orderListDto.setPaymentStatus(order.getPaymentStatus());
-        orderListDto.setAmount(order.getAmount());
-        orderListDto.setCustomerName(order.getCustomerName());
+        orderListDto.setCustomerName(order.getUser().getFirstName() + " " + order.getUser().getLastName());
         orderListDto.setAmount(order.getAmount());
         orderListDto.setOrderDate(order.getOrderDate());
         return orderListDto;
+    }
+
+    private MyOrdersDto mapToMyOrdersDto(Order order){
+
+        MyOrdersDto myOrdersDto = new MyOrdersDto();
+        myOrdersDto.setId(order.getId());
+        myOrdersDto.setOrderNumber(order.getOrderNumber());
+        myOrdersDto.setOrderStatus(order.getOrderStatus());
+        myOrdersDto.setPaymentStatus(order.getPaymentStatus());
+        myOrdersDto.setAmount(order.getAmount());
+        myOrdersDto.setOrderDate(order.getOrderDate());
+        return myOrdersDto;
     }
 }

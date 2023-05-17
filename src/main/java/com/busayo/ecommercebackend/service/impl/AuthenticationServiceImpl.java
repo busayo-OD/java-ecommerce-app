@@ -2,10 +2,12 @@ package com.busayo.ecommercebackend.service.impl;
 
 import com.busayo.ecommercebackend.dto.authentication.SignInDto;
 import com.busayo.ecommercebackend.dto.authentication.SignUpDto;
+import com.busayo.ecommercebackend.model.Notification;
 import com.busayo.ecommercebackend.model.Role;
 import com.busayo.ecommercebackend.model.User;
 import com.busayo.ecommercebackend.exception.EmailAlreadyExistsException;
 import com.busayo.ecommercebackend.exception.UsernameAlreadyExistsException;
+import com.busayo.ecommercebackend.repository.NotificationRepository;
 import com.busayo.ecommercebackend.repository.RoleRepository;
 import com.busayo.ecommercebackend.repository.UserRepository;
 import com.busayo.ecommercebackend.security.JwtTokenProvider;
@@ -28,17 +30,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
     private JwtTokenProvider jwtTokenProvider;
+    private NotificationRepository notificationRepository;
 
     public AuthenticationServiceImpl(AuthenticationManager authenticationManager,
                                      UserRepository userRepository,
                                      RoleRepository roleRepository,
                                      PasswordEncoder passwordEncoder,
-                                     JwtTokenProvider jwtTokenProvider) {
+                                     JwtTokenProvider jwtTokenProvider,
+                                     NotificationRepository notificationRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.notificationRepository = notificationRepository;
     }
 
     @Override
@@ -72,6 +77,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         roles.add(userRole);
         user.setRoles(roles);
         userRepository.save(user);
+
+        Notification notification = new Notification();
+
+        notification.setImage(user.getAvatar());
+        notification.setStatus("Active");
+        notification.setTitle("");
+        notification.setText(user.getUsername() + " signed up");
+
+        notificationRepository.save(notification);
+
         return "User registered successfully";
     }
 }

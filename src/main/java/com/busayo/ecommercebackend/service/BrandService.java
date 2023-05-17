@@ -7,10 +7,9 @@ import com.busayo.ecommercebackend.model.Brand;
 import java.util.List;
 
 public interface BrandService {
-    Brand addBrand(BrandDto brandDto);
+    void addBrand(BrandDto brandDto);
     Brand getBrand(Long brandId);
     List<BrandInfoDto> getActiveBrands();
-//    List<Brand> getAllBrands();
     Boolean updateBrand(BrandDto brandDto, Long brandId);
-    Boolean deleteBrand(Long id);
+    void deleteBrand(Long id);
 }

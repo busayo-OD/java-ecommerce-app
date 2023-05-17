@@ -52,9 +52,9 @@ public class ProductTypeController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")
-    public ResponseEntity<Boolean> deleteProductType(@PathVariable Long id) {
+    public void deleteProductType(@PathVariable Long id) {
 
-        return ResponseEntity.ok(productTypeService.deleteProductType(id));
+        productTypeService.deleteProductType(id);
     }
 
 }
