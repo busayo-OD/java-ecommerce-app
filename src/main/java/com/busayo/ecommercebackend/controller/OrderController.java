@@ -1,9 +1,6 @@
 package com.busayo.ecommercebackend.controller;
 
-import com.busayo.ecommercebackend.dto.order.MyOrdersDto;
-import com.busayo.ecommercebackend.dto.order.OrderListDto;
-import com.busayo.ecommercebackend.dto.order.OrderListResponseDto;
-import com.busayo.ecommercebackend.dto.order.PlaceOrderDto;
+import com.busayo.ecommercebackend.dto.order.*;
 import com.busayo.ecommercebackend.service.OrderService;
 import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
@@ -52,5 +49,11 @@ public class OrderController {
     public ResponseEntity<List<MyOrdersDto>> getMyOrders() {
         Long userId = CurrentUserUtil.getCurrentUser().getId();
         return ResponseEntity.ok(orderService.getMyOrders(userId));
+    }
+
+    @PutMapping("/billing-info/edit")
+    public void editBillingInfo(@RequestBody BillingInfoDto billingInfoDto) {
+        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        orderService.editBillingInfo(billingInfoDto, userId);
     }
 }

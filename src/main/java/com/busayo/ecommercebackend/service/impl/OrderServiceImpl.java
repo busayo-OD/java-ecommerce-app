@@ -137,6 +137,19 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void editBillingInfo(BillingInfoDto billingInfoDto, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        user.setFirstName(billingInfoDto.getFirstName());
+        user.setLastName(billingInfoDto.getLastName());
+        user.setPhoneNumber(billingInfoDto.getPhoneNumber());
+        user.setAddress(billingInfoDto.getAddress());
+        user.setState(billingInfoDto.getState());
+
+        userRepository.save(user);
+    }
+
     private OrderListDto mapToOrderListDto(Order order){
 
         OrderListDto orderListDto = new OrderListDto();

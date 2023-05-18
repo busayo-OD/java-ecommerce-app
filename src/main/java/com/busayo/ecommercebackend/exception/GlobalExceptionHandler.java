@@ -76,6 +76,22 @@ public class GlobalExceptionHandler{
         errors.put("code", ex.getCode().toString());
         return errors;
     }
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(OrderNotFoundException.class)
+    public Object notFound(OrderNotFoundException ex) {
+        final Map<String, Object> errors = new HashMap<String, Object>();
+        errors.put("entityName", OrderNotFoundException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.NOT_FOUND.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+
+
+
+
+
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ReviewNotFoundException.class)

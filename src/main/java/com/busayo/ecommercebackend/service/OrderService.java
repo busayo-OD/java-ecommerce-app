@@ -9,4 +9,5 @@ public interface OrderService {
     OrderListResponseDto getOrdersWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir);
     List<OrderListDto> getAllOrders();
     List<MyOrdersDto> getMyOrders(Long userId);
+    void editBillingInfo(BillingInfoDto billingAddressDto, Long userId);
 }
