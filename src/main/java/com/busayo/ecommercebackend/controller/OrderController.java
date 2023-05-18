@@ -23,9 +23,9 @@ public class OrderController {
 
 
     @PostMapping("/place-order")
-    public void placeOrder(@RequestBody PlaceOrderDto placeOrderDto) {
+    public String placeOrder(@RequestBody PlaceOrderDto placeOrderDto) {
         Long userId = CurrentUserUtil.getCurrentUser().getId();
-        orderService.placeOrder(userId, placeOrderDto);
+        return orderService.placeOrder(userId, placeOrderDto);
     }
 
     @GetMapping("/pagination/{status}")

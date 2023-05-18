@@ -48,54 +48,61 @@ public class OrderServiceImpl implements OrderService {
     private NotificationRepository notificationRepository;
 
     @Override
-    public void placeOrder(Long userId, PlaceOrderDto placeOrderDto) {
+    public String placeOrder(Long userId, PlaceOrderDto placeOrderDto) {
 
         CartDto cartDto = cartService.getMyCart(userId);
 
         List<CartItemDto> cartItemDtoList = cartDto.getCartItems();
 
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        // create the order and save it
-        Order newOrder = new Order();
-        newOrder.setOrderDate(new Date());
-        newOrder.setUser(user);
-        newOrder.setAmount(cartDto.getTotal());
-        newOrder.setOrderStatus("In Progress");
-        newOrder.setPaymentStatus("NO");
-        newOrder.setStatus("Active");
-        newOrder.setShippingAddress(placeOrderDto.getShippingAddress());
-        newOrder.setState(placeOrderDto.getState());
+        if (cartItemDtoList.isEmpty()) {
+            return "Cart is empty";
+        } else {
+            // create the order and save it
+            Order newOrder = new Order();
+            newOrder.setOrderDate(new Date());
+            newOrder.setUser(user);
+            newOrder.setAmount(cartDto.getTotal());
+            newOrder.setOrderStatus("In Progress");
+            newOrder.setPaymentStatus("NO");
+            newOrder.setStatus("Active");
+            newOrder.setShippingAddress(placeOrderDto.getShippingAddress());
+            newOrder.setState(placeOrderDto.getState());
 
-        int min = 1000;
-        int max = 5000;
-        int randomNum = ThreadLocalRandom.current().nextInt(min, max + 1);
-        newOrder.setOrderNumber(randomNum);
-        orderRepository.save(newOrder);
+            int min = 1000;
+            int max = 5000;
+            int randomNum = ThreadLocalRandom.current().nextInt(min, max + 1);
+            newOrder.setOrderNumber(randomNum);
+            orderRepository.save(newOrder);
 
-        for (CartItemDto cartItemDto : cartItemDtoList) {
-            // create orderItem and save each one
-            OrderDetail orderItem = new OrderDetail();
+            for (CartItemDto cartItemDto : cartItemDtoList) {
+                // create orderItem and save each one
+                OrderDetail orderItem = new OrderDetail();
 //            orderItem.setCreatedDate(new Date());
-            orderItem.setSubTotal(cartItemDto.getProduct().getPrice() * cartItemDto.getQuantity());
-            orderItem.setProduct(cartItemDto.getProduct());
-            orderItem.setQuantity(cartItemDto.getQuantity());
-            orderItem.setOrder(newOrder);
-            orderItem.setStatus("Active");
-            // add to order item list
-            orderDetailsRepository.save(orderItem);
+                orderItem.setSubTotal(cartItemDto.getProduct().getPrice() * cartItemDto.getQuantity());
+                orderItem.setProduct(cartItemDto.getProduct());
+                orderItem.setQuantity(cartItemDto.getQuantity());
+                orderItem.setOrder(newOrder);
+                orderItem.setStatus("Active");
+                // add to order item list
+                orderDetailsRepository.save(orderItem);
+            }
+            cartService.deleteUserCartItems(userId);
+
+            Notification notification = new Notification();
+
+            notification.setImage(user.getAvatar());
+            notification.setStatus("Active");
+            notification.setTitle("");
+            notification.setText("New order by " + user.getUsername() + " with order number " + newOrder.getOrderNumber());
+
+            notificationRepository.save(notification);
+            return "Successful";
         }
-        cartService.deleteUserCartItems(userId);
 
-        Notification notification = new Notification();
-
-        notification.setImage(user.getAvatar());
-        notification.setStatus("Active");
-        notification.setTitle("");
-        notification.setText("New order by " + user.getUsername() + " with order number " + newOrder.getOrderNumber());
-
-        notificationRepository.save(notification);
     }
 
     @Override
