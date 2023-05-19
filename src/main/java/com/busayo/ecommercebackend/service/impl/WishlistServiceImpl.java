@@ -117,8 +117,13 @@ public class WishlistServiceImpl implements WishlistService {
         wishlistInfoDto.setId(wishlist.getId());
         wishlistInfoDto.setProduct(wishlist.getProduct());
         wishlistInfoDto.setUsername(wishlist.getUser().getUsername());
+        wishlistInfoDto.setFullName(wishlist.getUser().getFirstName() + " " + wishlist.getUser().getLastName());
         wishlistInfoDto.setWishlistType(wishlist.getWishlistType());
         wishlistInfoDto.setCreatedDate(wishlist.getCreatedDate());
+
+        int diffInDays = (int)(new Date().getTime() - wishlist.getCreatedDate().getTime())
+                / (1000 * 60 * 60 * 24);
+        wishlistInfoDto.setDaysInWishlist(diffInDays);
 
         return wishlistInfoDto;
     }

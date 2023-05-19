@@ -15,7 +15,11 @@ public class WishlistInfoDto {
 
     private String username;
 
+    private String fullName;
+
     private String wishlistType;
 
     private Date createdDate;
+
+    private  int daysInWishlist;
 }
