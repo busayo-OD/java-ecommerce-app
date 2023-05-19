@@ -112,14 +112,14 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewInfoResponseDto getReviewsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public ReviewInfoResponseDto getReviewsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Review> reviews = reviewRepository.findByStatus(status, pageable);
+        Page<Review> reviews = reviewRepository.findAll(pageable);
 
         List<Review> reviewList = reviews.getContent();
 
@@ -160,8 +160,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewInfoDto> getProductReviews(Long productId, String status) {
-        List<Review> productReviews = reviewRepository.findByProductIdAndStatus(productId, status);
+    public List<ReviewInfoDto> getProductReviews(Long productId) {
+        List<Review> productReviews = reviewRepository.findByProductId(productId);
         return productReviews.stream().map((review) -> mapToReviewInfoDto(review))
                 .collect(Collectors.toList());
     }
@@ -180,7 +180,8 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewInfoDto reviewInfoDto = new ReviewInfoDto();
         reviewInfoDto.setId(review.getId());
         reviewInfoDto.setUsername(review.getUser().getUsername());
-        reviewInfoDto.setProduct(review.getProduct().getName());
+        reviewInfoDto.setFullName(review.getUser().getFirstName() + " " + review.getUser().getLastName());
+        reviewInfoDto.setProduct(review.getProduct());
         reviewInfoDto.setComment(review.getComment());
         reviewInfoDto.setRating(review.getRating());
         reviewInfoDto.setCreatedOn(review.getCreatedOn());
@@ -188,4 +189,5 @@ public class ReviewServiceImpl implements ReviewService {
 
         return reviewInfoDto;
     }
+
 }

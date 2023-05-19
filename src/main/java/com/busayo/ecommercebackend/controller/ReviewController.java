@@ -39,7 +39,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
 
-    @GetMapping("/pagination/{status}")
+    @GetMapping("/pagination")
     public ReviewInfoResponseDto getReviewsWithPaginationAndSorting(
             @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
@@ -47,7 +47,7 @@ public class ReviewController {
             @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return reviewService.getReviewsWithPaginationAndSorting(status, pageNo, pageSize, sortBy, sortDir);
+        return reviewService.getReviewsWithPaginationAndSorting(pageNo, pageSize, sortBy, sortDir);
     }
 
     @GetMapping("{id}")
@@ -56,11 +56,11 @@ public class ReviewController {
         return  ResponseEntity.ok(review);
     }
 
-    @GetMapping("/product/{id}/{status}")
+    @GetMapping("/product/{id}")
     public ResponseEntity<List<ReviewInfoDto>> getProductReviews(
             @PathVariable("id") Long productId,
             @PathVariable String status){
-        return ResponseEntity.ok(reviewService.getProductReviews(productId, status));
+        return ResponseEntity.ok(reviewService.getProductReviews(productId));
 
     }
 

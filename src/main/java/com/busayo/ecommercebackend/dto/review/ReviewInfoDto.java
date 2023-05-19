@@ -1,5 +1,6 @@
 package com.busayo.ecommercebackend.dto.review;
 
+import com.busayo.ecommercebackend.model.Product;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,9 @@ public class ReviewInfoDto {
 
     private String username;
 
-    private String product;
+    private String fullName;
+
+    private Product product;
 
     private int rating;
 

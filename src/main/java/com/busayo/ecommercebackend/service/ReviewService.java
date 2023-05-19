@@ -10,8 +10,8 @@ public interface ReviewService {
     Boolean addReview(ReviewDto reviewDto, Long id);
     Boolean updateReview(ReviewDto reviewDto, Long userId);
     List<ReviewInfoDto> getAllReviews();
-    ReviewInfoResponseDto getReviewsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir);
+    ReviewInfoResponseDto getReviewsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir);
     ReviewInfoDto getReview (Long reviewId);
     void deleteReview(Long reviewId, Long id);
-    List<ReviewInfoDto> getProductReviews(Long productId, String status);
+    List<ReviewInfoDto> getProductReviews(Long productId);
 }
