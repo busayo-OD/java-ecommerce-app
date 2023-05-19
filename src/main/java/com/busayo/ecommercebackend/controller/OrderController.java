@@ -20,8 +20,6 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-
-
     @PostMapping("/place-order")
     public String placeOrder(@RequestBody PlaceOrderDto placeOrderDto) {
         Long userId = CurrentUserUtil.getCurrentUser().getId();
