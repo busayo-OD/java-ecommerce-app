@@ -3,10 +3,7 @@ package com.busayo.ecommercebackend.service.impl;
 import com.busayo.ecommercebackend.dto.product.*;
 import com.busayo.ecommercebackend.model.*;
 import com.busayo.ecommercebackend.exception.ProductNotFoundException;
-import com.busayo.ecommercebackend.repository.BrandRepository;
-import com.busayo.ecommercebackend.repository.CategoryRepository;
-import com.busayo.ecommercebackend.repository.ProductRepository;
-import com.busayo.ecommercebackend.repository.ProductTypeRepository;
+import com.busayo.ecommercebackend.repository.*;
 import com.busayo.ecommercebackend.service.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final ProductTypeRepository productTypeRepository;
+    private final ProductImageRepository productImageRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -34,12 +32,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductServiceImpl(ProductRepository productRepository,
                               BrandRepository brandRepository,
                               CategoryRepository categoryRepository,
-                              ProductTypeRepository productTypeRepository
-                              ) {
+                              ProductTypeRepository productTypeRepository,
+                              ProductImageRepository productImageRepository
+    ) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
         this.productTypeRepository = productTypeRepository;
+        this.productImageRepository = productImageRepository;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(productDto.getPrice());
         product.setColour(productDto.getColour());
         product.setStatus("Active");
-        product.setImage(productDto.getImage());
+
         product.setDescription(productDto.getDescription());
 
         String categoryName = productDto.getCategory().toUpperCase();
@@ -66,13 +66,19 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(brand);
 
         productRepository.save(product);
+
+        productDto.getImages().forEach(image -> {
+            ProductImage productImage = new ProductImage();
+            productImage.setImage(image.getImage());
+            productImage.setProduct(product);
+            productImageRepository.save(productImage);
+        });
         return  true;
     }
 
     @Override
     public  ProductDto getProduct (Long productId) {
         Product product = productRepository.findById(productId)
-
                 .orElseThrow(() -> new ProductNotFoundException(productId));
         return mapToProductDto(product);
     }
@@ -200,7 +206,9 @@ public class ProductServiceImpl implements ProductService {
         product.setName(productDto.getName());
         product.setStock(productDto.getStock());
         product.setPrice(productDto.getPrice());
-        product.setImage(productDto.getImage());
+
+
+
         product.setDescription(productDto.getDescription());
 
         String categoryName = productDto.getCategory().toUpperCase();
@@ -216,6 +224,22 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(brand);
 
         productRepository.save(product);
+
+        productDto.getImages().forEach(image -> {
+            ProductImage existingImage = productImageRepository.findByImage(image.getImage());
+            if(existingImage == null){
+                ProductImage productImage = new ProductImage();
+                productImage.setImage(image.getImage());
+                productImage.setProduct(product);
+                productImageRepository.save(productImage);
+            }
+            else if ( !existingImage.getProduct().getId().equals(product.getId())) {
+                ProductImage productImage = new ProductImage();
+                productImage.setImage(image.getImage());
+                productImage.setProduct(product);
+                productImageRepository.save(productImage);
+            }
+        });
         return true;
     }
 
@@ -228,6 +252,36 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
         return true;
     }
+
+    @Override
+    public ProductResponse2Dto searchProducts(String query, int pageNo, int pageSize, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Product> products = productRepository.searchProductsSQL(query, pageable);
+
+        List<Product> productList = products.getContent();
+
+        List<ProductListDto> content = productList.stream().map(product -> mapToProductListDto(product)).collect(Collectors.toList());
+
+        ProductResponse2Dto productResponseDto = new ProductResponse2Dto();
+        productResponseDto.setContent(content);
+        productResponseDto.setPageNo(products.getNumber());
+        productResponseDto.setPageSize(products.getSize());
+        productResponseDto.setTotalElements(products.getTotalElements());
+        productResponseDto.setTotalPages(products.getTotalPages());
+        productResponseDto.setLast(products.isLast());
+        return productResponseDto;
+    }
+
+//    @Override
+//    public List<Product> searchProducts(String query) {
+//        List<Product> products = productRepository.searchProductsSQL(query);
+//        return products;
+//    }
 
     private ProductListDto mapToProductListDto(Product product){
 
@@ -245,7 +299,8 @@ public class ProductServiceImpl implements ProductService {
         productListDto.setProductType(productType.getName());
 
         productListDto.setPrice(product.getPrice());
-        productListDto.setImage(product.getImage());
+        productListDto.setImages(product.getImages().stream().map((productImage) -> mapToProductImageDto(productImage))
+                .collect(Collectors.toList()));
         productListDto.setStock(product.getStock());
         return productListDto;
     }
@@ -266,7 +321,8 @@ public class ProductServiceImpl implements ProductService {
         productByProductType.setStock(product.getStock());
         productByProductType.setBrand(product.getBrand().getName());
         productByProductType.setCategory(product.getCategory().getName());
-        productByProductType.setImage(product.getImage());
+        productByProductType.setImages(product.getImages().stream().map((productImage) -> mapToProductImageDto(productImage))
+                .collect(Collectors.toList()));
         productByProductType.setPrice(product.getPrice());
         productByProductType.setDescription(product.getDescription());
         return productByProductType;
@@ -277,13 +333,20 @@ public class ProductServiceImpl implements ProductService {
         productDto.setId(product.getId());
         productDto.setName(product.getName());
         productDto.setStock(product.getStock());
-        productDto.setImage(product.getImage());
+        productDto.setImages(product.getImages().stream().map((productImage) -> mapToProductImageDto(productImage))
+                .collect(Collectors.toList()));
         productDto.setBrand(product.getBrand().getName());
         productDto.setProductType(product.getProductType().getName());
         productDto.setCategory(product.getCategory().getName());
         productDto.setPrice(product.getPrice());
         productDto.setDescription(product.getDescription());
         return productDto;
+    }
+
+    private ProductImageDto mapToProductImageDto (ProductImage productImage){
+        ProductImageDto productImageDto = new ProductImageDto();
+        productImageDto.setImage(productImage.getImage());
+        return productImageDto;
     }
 
 }

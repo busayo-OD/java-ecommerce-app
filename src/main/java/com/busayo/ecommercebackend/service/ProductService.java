@@ -25,4 +25,6 @@ public interface ProductService {
 
     Boolean deleteProduct(Long productId);
 
+    ProductResponse2Dto searchProducts(String query, int pageNo, int pageSize, String sortBy, String sortDir);
+
 }

@@ -90,10 +90,21 @@ public class ProductController {
         return ResponseEntity.ok(productService.updateProduct(productDto, productIdId));
     }
 
+    @GetMapping("/search")
+    public ProductResponse2Dto searchProducts (@RequestParam("query") String query,
+                                               @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+                                               @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+                                               @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+                                               @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    ) {
+        return productService.searchProducts(query,pageNo, pageSize, sortBy, sortDir);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")
     public ResponseEntity<Boolean> deleteProduct(@PathVariable Long id) {
 
         return ResponseEntity.ok(productService.deleteProduct(id));
     }
+
 }

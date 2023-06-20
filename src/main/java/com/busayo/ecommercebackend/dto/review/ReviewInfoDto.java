@@ -1,11 +1,11 @@
 package com.busayo.ecommercebackend.dto.review;
 
 import com.busayo.ecommercebackend.model.Product;
+import com.busayo.ecommercebackend.model.ReviewResponse;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
-
 @Getter
 @Setter
 public class ReviewInfoDto {
@@ -21,6 +21,8 @@ public class ReviewInfoDto {
     private int rating;
 
     private String comment;
+
+    private ReviewResponse response;
 
     private Date createdOn;
 

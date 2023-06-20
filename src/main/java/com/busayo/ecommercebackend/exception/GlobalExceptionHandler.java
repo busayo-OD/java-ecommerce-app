@@ -87,17 +87,22 @@ public class GlobalExceptionHandler{
         return errors;
     }
 
-
-
-
-
-
-
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ReviewNotFoundException.class)
     public Object notFound(ReviewNotFoundException ex) {
         final Map<String, Object> errors = new HashMap<String, Object>();
         errors.put("entityName", ReviewNotFoundException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.NOT_FOUND.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ReviewResponseNotFoundException.class)
+    public Object notFound(ReviewResponseNotFoundException ex) {
+        final Map<String, Object> errors = new HashMap<String, Object>();
+        errors.put("entityName", ReviewResponseNotFoundException.ENTITY_NAME);
         errors.put("message", ex.getMessage());
         ex.setCode(HttpStatus.NOT_FOUND.value());
         errors.put("code", ex.getCode().toString());

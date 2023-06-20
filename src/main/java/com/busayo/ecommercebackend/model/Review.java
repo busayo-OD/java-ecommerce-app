@@ -37,12 +37,17 @@ public class Review {
     private Product product;
 
     @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Column(name = "created_on", updatable = false, nullable = false)
     private Date createdOn;
 
     @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Column(name = "updated_on", nullable = false)
     private Date updatedOn;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "response_id")
+    private ReviewResponse reviewResponse;
+
 }

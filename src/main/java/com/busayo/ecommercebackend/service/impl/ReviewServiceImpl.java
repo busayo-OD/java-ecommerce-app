@@ -1,19 +1,15 @@
 package com.busayo.ecommercebackend.service.impl;
 
+import com.busayo.ecommercebackend.dto.review.ResponseDto;
 import com.busayo.ecommercebackend.dto.review.ReviewDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
 import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.exception.ReviewNotFoundException;
+import com.busayo.ecommercebackend.exception.ReviewResponseNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
-import com.busayo.ecommercebackend.model.Notification;
-import com.busayo.ecommercebackend.model.Product;
-import com.busayo.ecommercebackend.model.Review;
-import com.busayo.ecommercebackend.model.User;
-import com.busayo.ecommercebackend.repository.NotificationRepository;
-import com.busayo.ecommercebackend.repository.ProductRepository;
-import com.busayo.ecommercebackend.repository.ReviewRepository;
-import com.busayo.ecommercebackend.repository.UserRepository;
+import com.busayo.ecommercebackend.model.*;
+import com.busayo.ecommercebackend.repository.*;
 import com.busayo.ecommercebackend.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -41,6 +37,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private ReviewResponseRepository reviewResponseRepository;
+
     @Override
     public Boolean addReview(ReviewDto reviewDto, Long id) {
         User user = userRepository.findById(id)
@@ -64,7 +63,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         notification.setImage(user.getAvatar());
         notification.setStatus("Active");
-        notification.setTitle("");
+        notification.setTitle(user.getFirstName() + " " + user.getLastName());
         notification.setText(user.getUsername() + " submitted a review for " + product.getName());
 
         notificationRepository.save(notification);
@@ -166,15 +165,25 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
-//    private ReviewDto mapToReviewDto (Review review) {
-//        ReviewDto reviewDto = new ReviewDto();
-//        reviewDto.setId(review.getId());
-//        reviewDto.setUsername(review.getUser().getUsername());
-//        reviewDto.setComment(review.getComment());
-//        reviewDto.setRating(review.getRating());
-//
-//        return reviewDto;
-//    }
+    @Override
+    public void addResponse(ResponseDto responseDto, Long reviewId) {
+        ReviewResponse response = new ReviewResponse();
+        response.setId(responseDto.getId());
+        response.setResponse(responseDto.getResponse());
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+        review.setReviewResponse(response);
+        reviewResponseRepository.save(response);
+    }
+
+    @Override
+    public void deleteResponse(Long responseId) {
+        ReviewResponse response = reviewResponseRepository.findById(responseId)
+                .orElseThrow(() -> new ReviewResponseNotFoundException(responseId));
+        reviewResponseRepository.delete(response);
+    }
+
 
     private ReviewInfoDto mapToReviewInfoDto (Review review) {
         ReviewInfoDto reviewInfoDto = new ReviewInfoDto();
@@ -184,10 +193,19 @@ public class ReviewServiceImpl implements ReviewService {
         reviewInfoDto.setProduct(review.getProduct());
         reviewInfoDto.setComment(review.getComment());
         reviewInfoDto.setRating(review.getRating());
+        reviewInfoDto.setResponse(review.getReviewResponse());
         reviewInfoDto.setCreatedOn(review.getCreatedOn());
         reviewInfoDto.setUpdatedOn(review.getUpdatedOn());
 
         return reviewInfoDto;
     }
 
+    private ResponseDto mapToReviewResponseDto(ReviewResponse reviewResponse) {
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setId(reviewResponse.getId());
+        responseDto.setResponse(reviewResponse.getResponse());
+        return responseDto;
+    }
+
 }
+

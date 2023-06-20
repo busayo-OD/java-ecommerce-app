@@ -1,12 +1,15 @@
 package com.busayo.ecommercebackend.controller;
 
+import com.busayo.ecommercebackend.dto.review.ResponseDto;
 import com.busayo.ecommercebackend.dto.review.ReviewDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
 import com.busayo.ecommercebackend.service.ReviewService;
 import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
+import com.busayo.ecommercebackend.utils.ReviewConstants;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +31,13 @@ public class ReviewController {
         return reviewService.addReview(reviewDto, userId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/add-response/{id}")
+    public void addReviewResponse(@RequestBody ResponseDto responseDto,
+                                  @PathVariable("id") Long reviewId){
+        reviewService.addResponse(responseDto, reviewId);
+    }
+
     @PutMapping("/edit")
     public ResponseEntity<Boolean> updateReview(@RequestBody ReviewDto reviewDto){
         Long userId = CurrentUserUtil.getCurrentUser().getId();
@@ -41,11 +51,10 @@ public class ReviewController {
 
     @GetMapping("/pagination")
     public ReviewInfoResponseDto getReviewsWithPaginationAndSorting(
-            @PathVariable String status,
-            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+            @RequestParam(value = "pageNo", defaultValue = ReviewConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = ReviewConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = ReviewConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = ReviewConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
         return reviewService.getReviewsWithPaginationAndSorting(pageNo, pageSize, sortBy, sortDir);
     }
