@@ -51,7 +51,7 @@ public class CouponServiceImpl implements CouponService {
         return coupon;
     }
 
-    private List<Coupon> coupons = new ArrayList<>();
+    private final List<Coupon> coupons = new ArrayList<>();
 
     @Override
     public List<Coupon> getAllCoupon() {
@@ -59,7 +59,7 @@ public class CouponServiceImpl implements CouponService {
         List<Coupon> allCoupons = couponRepository.findAll();
 
         for (Coupon coupon : allCoupons) {
-            if ((allCoupons != null) && (coupon.getStatus().trim().equals("Active"))) {
+            if (coupon.getStatus().trim().equals("Active")) {
                 coupons.add(coupon);
             }
         }
@@ -78,7 +78,7 @@ public class CouponServiceImpl implements CouponService {
 
         List<Coupon> couponList = coupons.getContent();
 
-        List<CouponDto> content = couponList.stream().map(coupon -> mapToCouponDto(coupon)).collect(Collectors.toList());
+        List<CouponDto> content = couponList.stream().map(this::mapToCouponDto).collect(Collectors.toList());
 
         CouponResponseDto couponResponseDto = new CouponResponseDto();
         couponResponseDto.setContent(content);
@@ -89,6 +89,32 @@ public class CouponServiceImpl implements CouponService {
         couponResponseDto.setLast(coupons.isLast());
 
         return couponResponseDto;
+    }
+
+    @Override
+    public CouponResponseDto getCouponsByStatus(String couponStatus, String status, int pageNo, int pageSize, String sortBy, String sortDir){
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Coupon> coupons = couponRepository.findByCouponStatusAndStatus(couponStatus.toUpperCase(), status, pageable);
+
+        List<Coupon> couponList = coupons.getContent();
+
+        List<CouponDto> content = couponList.stream().map(this::mapToCouponDto).collect(Collectors.toList());
+
+        CouponResponseDto couponResponseDto = new CouponResponseDto();
+        couponResponseDto.setContent(content);
+        couponResponseDto.setPageNo(coupons.getNumber());
+        couponResponseDto.setPageSize(coupons.getSize());
+        couponResponseDto.setTotalElements(coupons.getTotalElements());
+        couponResponseDto.setTotalPages(coupons.getTotalPages());
+        couponResponseDto.setLast(coupons.isLast());
+
+        return couponResponseDto;
+
     }
 
     @Override

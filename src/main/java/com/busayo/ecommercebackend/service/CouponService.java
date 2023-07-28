@@ -13,4 +13,5 @@ public interface CouponService {
     CouponResponseDto getCouponsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir);
     Boolean updateCoupon(CouponDto couponDto, Long couponId);
     Boolean deleteCoupon(Long couponId);
+    CouponResponseDto getCouponsByStatus(String couponStatus, String status, int pageNo, int pageSize, String sortBy, String sortDir);
 }

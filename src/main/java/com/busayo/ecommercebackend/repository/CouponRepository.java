@@ -6,6 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
-
     Page<Coupon> findByStatus(String status, Pageable pageable);
+    Page<Coupon> findByCouponStatusAndStatus(String couponStatus, String status, Pageable pageable);
 }
