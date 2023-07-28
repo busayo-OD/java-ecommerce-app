@@ -5,12 +5,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class WishlistDto {
+public class WishlistBasketDto {
     private Long id;
-
-    private Long productId;
-
-    private Long basketId;
-
-    private int quantity;
+    private String name;
 }

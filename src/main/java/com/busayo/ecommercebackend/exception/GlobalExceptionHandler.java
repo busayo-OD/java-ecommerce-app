@@ -197,5 +197,27 @@ public class GlobalExceptionHandler{
         return errors;
     }
 
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(WishlistBasketAlreadyExistsException.class)
+    public Object exists(WishlistBasketAlreadyExistsException ex) {
+        final Map<String, Object> errors = new HashMap<String, Object>();
+        errors.put("entityName", WishlistBasketAlreadyExistsException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.CONFLICT.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(WishlistBasketNotFoundException.class)
+    public Object notFound(WishlistBasketNotFoundException ex) {
+        final Map<String, Object> errors = new HashMap<String, Object>();
+        errors.put("entityName", WishlistBasketNotFoundException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.NOT_FOUND.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
 }
 

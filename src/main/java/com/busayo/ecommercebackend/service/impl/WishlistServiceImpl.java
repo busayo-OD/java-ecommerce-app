@@ -1,16 +1,17 @@
 package com.busayo.ecommercebackend.service.impl;
 
-import com.busayo.ecommercebackend.dto.wishlist.MyWishlistDto;
-import com.busayo.ecommercebackend.dto.wishlist.WishlistDto;
-import com.busayo.ecommercebackend.dto.wishlist.WishlistInfoDto;
-import com.busayo.ecommercebackend.dto.wishlist.WishlistInfoResponseDto;
+import com.busayo.ecommercebackend.dto.wishlist.*;
 import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
+import com.busayo.ecommercebackend.exception.WishlistBasketAlreadyExistsException;
+import com.busayo.ecommercebackend.exception.WishlistBasketNotFoundException;
 import com.busayo.ecommercebackend.model.Product;
 import com.busayo.ecommercebackend.model.User;
 import com.busayo.ecommercebackend.model.Wishlist;
+import com.busayo.ecommercebackend.model.WishlistBasket;
 import com.busayo.ecommercebackend.repository.ProductRepository;
 import com.busayo.ecommercebackend.repository.UserRepository;
+import com.busayo.ecommercebackend.repository.WishlistBasketRepository;
 import com.busayo.ecommercebackend.repository.WishlistRepository;
 import com.busayo.ecommercebackend.service.WishlistService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +33,9 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Autowired
     private WishlistRepository wishlistRepository;
+
+    @Autowired
+    private WishlistBasketRepository wishlistBasketRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -50,27 +56,28 @@ public class WishlistServiceImpl implements WishlistService {
         wishlist.setProduct(product);
         wishlist.setUser(user);
         wishlist.setCreatedDate(new Date());
-        wishlist.setWishlistType(wishlistDto.getWishlistType());
+        Long basketId = wishlistDto.getBasketId();
+        WishlistBasket wishlistBasket = wishlistBasketRepository.findById(basketId)
+                .orElseThrow(() -> new WishlistBasketNotFoundException(basketId));
+        wishlist.setBasket(wishlistBasket);
+        wishlist.setQuantity(wishlistDto.getQuantity());
         wishlistRepository.save(wishlist);
         return true;
     }
 
-    private List<Wishlist> wishlists = new ArrayList<>();
+    private List<MyWishlistDto> mapToMyWishlistDtoList(List<Wishlist> wishlists) {
+        return wishlists.stream()
+                .map(this::mapToMyWishlistDto)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<MyWishlistDto> getMyWishList(Long id) {
-
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        wishlists.clear();
-        List<Wishlist> allWishlists = wishlistRepository.findAll();
-        for (Wishlist wishlist : allWishlists) {
-            if ((allWishlists != null) && (wishlist.getUser().equals(user))) {
-                wishlists.add(wishlist);
-            }
-        }
-        return wishlists.stream().map((wishlist) -> mapToMyWishlistDto(wishlist))
-                .collect(Collectors.toList());
+        List<Wishlist> userWishlists = wishlistRepository.findByUser(user);
+        return mapToMyWishlistDtoList(userWishlists);
     }
 
     @Override
@@ -86,7 +93,7 @@ public class WishlistServiceImpl implements WishlistService {
 
         List<Wishlist> wishlistList = wishlists.getContent();
 
-        List<WishlistInfoDto> content = wishlistList.stream().map(wishlist -> mapToWishlistInfoDto(wishlist)).collect(Collectors.toList());
+        List<WishlistInfoDto> content = wishlistList.stream().map(this::mapToWishlistInfoDto).collect(Collectors.toList());
 
         WishlistInfoResponseDto wishlistInfoResponse = new WishlistInfoResponseDto();
         wishlistInfoResponse.setContent(content);
@@ -99,32 +106,80 @@ public class WishlistServiceImpl implements WishlistService {
 
     }
 
+    @Override
+    public WishlistInfoResponseDto getWishlistByBasket(Long basketId, int pageNo, int pageSize, String sortBy, String sortDir){
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Wishlist> wishlists = wishlistRepository.findByBasketId(basketId, pageable);
+
+        List<Wishlist> wishlistList = wishlists.getContent();
+
+        List<WishlistInfoDto> content = wishlistList.stream().map(this::mapToWishlistInfoDto).collect(Collectors.toList());
+
+        WishlistInfoResponseDto wishlistInfoResponse = new WishlistInfoResponseDto();
+        wishlistInfoResponse.setContent(content);
+        wishlistInfoResponse.setPageNo(wishlists.getNumber());
+        wishlistInfoResponse.setPageSize(wishlists.getSize());
+        wishlistInfoResponse.setTotalElements(wishlists.getTotalElements());
+        wishlistInfoResponse.setTotalPages(wishlists.getTotalPages());
+        wishlistInfoResponse.setLast(wishlists.isLast());
+        return wishlistInfoResponse;
+    }
+
+    @Override
+    public void addWishlistBasket(WishlistBasketDto wishlistBasketDto) {
+        String basketName = wishlistBasketDto.getName();
+        boolean existingBasket = wishlistBasketRepository.existsByName(basketName);
+
+        if (existingBasket) {
+            throw new WishlistBasketAlreadyExistsException();
+        } else {
+            WishlistBasket wishlistBasket = new WishlistBasket();
+            wishlistBasket.setId(wishlistBasketDto.getId());
+            wishlistBasket.setName(wishlistBasketDto.getName());
+            wishlistBasketRepository.save(wishlistBasket);
+        }
+
+    }
 
     private MyWishlistDto mapToMyWishlistDto (Wishlist wishlist) {
 
         MyWishlistDto myWishlistDto = new MyWishlistDto();
         myWishlistDto.setId(wishlist.getId());
         myWishlistDto.setProduct(wishlist.getProduct());
-        myWishlistDto.setWishlistType(wishlist.getWishlistType());
+        myWishlistDto.setWishlistType(wishlist.getBasket());
+        myWishlistDto.setQuantity(wishlist.getQuantity());
         myWishlistDto.setCreatedDate(wishlist.getCreatedDate());
 
         return myWishlistDto;
     }
 
-    private WishlistInfoDto mapToWishlistInfoDto (Wishlist wishlist) {
-
+    private WishlistInfoDto mapToWishlistInfoDto(Wishlist wishlist) {
         WishlistInfoDto wishlistInfoDto = new WishlistInfoDto();
         wishlistInfoDto.setId(wishlist.getId());
         wishlistInfoDto.setProduct(wishlist.getProduct());
         wishlistInfoDto.setUsername(wishlist.getUser().getUsername());
         wishlistInfoDto.setFullName(wishlist.getUser().getFirstName() + " " + wishlist.getUser().getLastName());
-        wishlistInfoDto.setWishlistType(wishlist.getWishlistType());
+        wishlistInfoDto.setWishlistType(wishlist.getBasket());
+        wishlistInfoDto.setQuantity(wishlist.getQuantity());
         wishlistInfoDto.setCreatedDate(wishlist.getCreatedDate());
 
-        int diffInDays = (int)(new Date().getTime() - wishlist.getCreatedDate().getTime())
-                / (1000 * 60 * 60 * 24);
+        LocalDate currentDate = LocalDate.now();
+
+        // Convert java.sql.Date to LocalDate
+        Date sqlDate = wishlist.getCreatedDate();
+        java.util.Date utilDate = new java.util.Date(sqlDate.getTime());
+        LocalDate createdDate = utilDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        int diffInDays = (int) ChronoUnit.DAYS.between(createdDate, currentDate);
+
         wishlistInfoDto.setDaysInWishlist(diffInDays);
 
         return wishlistInfoDto;
     }
+
 }

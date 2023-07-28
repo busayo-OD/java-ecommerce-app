@@ -1,6 +1,7 @@
 package com.busayo.ecommercebackend.dto.wishlist;
 
 import com.busayo.ecommercebackend.model.Product;
+import com.busayo.ecommercebackend.model.WishlistBasket;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,9 @@ public class MyWishlistDto {
 
     private Product product;
 
-    private String wishlistType;
+    private WishlistBasket wishlistType;;
+
+    private int quantity;
 
     private Date createdDate;
 }
