@@ -61,21 +61,35 @@ public class ProductController {
         return productService.getProductsByCategoryIdWithPaginationAndSorting(categoryId, status,pageNo, pageSize, sortBy, sortDir);
     }
 
-    @GetMapping("/category/{id}")
-    public ResponseEntity<List<ProductByCategoryDto>> getProductsByCategory(@PathVariable("id") Long categoryId){
-        return ResponseEntity.ok(productService.getProductsByCategoryId(categoryId));
-    }
-
-    @GetMapping("/product-type/pagination/{id}/{status}")
-    public ProductResponse4Dto getProductsByProductTypeWithPaginationAndSorting(
-            @PathVariable("id") Long productTypeId,
+    @GetMapping("/search/{category-id}/{product-type-id}/{status}")
+    public ProductResponse3Dto getProductsByCategoryAndProductType(
+            @PathVariable("category-id") Long categoryId,
+            @PathVariable("product-type-id") Long productTypeId,
             @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return productService.getProductsByProductTypeIdWithPaginationAndSorting(productTypeId, status, pageNo, pageSize, sortBy, sortDir);
+        return productService.getProductsByCategoryAndProductType(categoryId, productTypeId, status,pageNo, pageSize, sortBy, sortDir);
+    }
+
+
+    @GetMapping("/category/{id}")
+    public ResponseEntity<List<ProductByCategoryDto>> getProductsByCategory(@PathVariable("id") Long categoryId){
+        return ResponseEntity.ok(productService.getProductsByCategoryId(categoryId));
+    }
+
+    @GetMapping("/product-type/{product-type-id}/{status}")
+    public ProductResponse2Dto getProductsByProductTypeWithPaginationAndSorting(
+            @PathVariable("product-type-id") Long productTypeId,
+            @PathVariable String status,
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    ){
+        return productService.getProductsByProductType(productTypeId, status, pageNo, pageSize, sortBy, sortDir);
     }
 
     @GetMapping("/product-type/{id}")
@@ -91,13 +105,28 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ProductResponse2Dto searchProducts (@RequestParam("query") String query,
-                                               @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
-                                               @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-                                               @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
-                                               @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    public ProductResponse2Dto searchProductsByNameOrDescription (@RequestParam("query") String query,
+                                                                  @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+                                                                  @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+                                                                  @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+                                                                  @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ) {
         return productService.searchProducts(query,pageNo, pageSize, sortBy, sortDir);
+    }
+
+    @GetMapping("/product-search/{status}")
+    public ProductResponse2Dto productSearchByCategoryAndTypeAndBrand(
+            @RequestParam("categoryName") String categoryName,
+            @RequestParam("productTypeName") String productTypeName,
+            @RequestParam("brandName") String brandName,
+            @PathVariable String status,
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+
+    ){
+        return productService.productSearchByCategoryAndTypeAndBrand(categoryName, productTypeName, brandName, status,pageNo, pageSize, sortBy, sortDir);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -105,6 +134,24 @@ public class ProductController {
     public ResponseEntity<Boolean> deleteProduct(@PathVariable Long id) {
 
         return ResponseEntity.ok(productService.deleteProduct(id));
+    }
+
+    @GetMapping("/best-selling")
+    public ProductResponse5Dto getBestSellingProducts(
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize
+    ){
+        return productService.getProductsByTotalQuantityDescending(pageNo, pageSize);
+    }
+
+    @GetMapping("/reviewed")
+    public ProductResponse5Dto getReviewedProducts(
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    ){
+        return productService.getReviewedProducts(pageNo, pageSize, sortBy, sortDir);
     }
 
 }
