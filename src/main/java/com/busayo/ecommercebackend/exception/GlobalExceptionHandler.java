@@ -67,6 +67,28 @@ public class GlobalExceptionHandler{
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ShippingMethodNotFoundException.class)
+    public Object notFound(ShippingMethodNotFoundException ex) {
+        final Map<String, Object> errors = new HashMap<String, Object>();
+        errors.put("entityName", ShippingMethodNotFoundException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.NOT_FOUND.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ShippingMethodDuplicateException.class)
+    public Object duplicate(ShippingMethodDuplicateException ex) {
+        final Map<String, Object> errors = new HashMap<>();
+        errors.put("entityName", ShippingMethodDuplicateException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.CONFLICT.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotificationNotFoundException.class)
     public Object notFound(NotificationNotFoundException ex) {
         final Map<String, Object> errors = new HashMap<String, Object>();
