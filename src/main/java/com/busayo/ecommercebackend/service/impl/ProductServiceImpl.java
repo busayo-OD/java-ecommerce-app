@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean addProduct(ProductDto productDto) {
+    public boolean addProduct(ProductDto productDto) {
         Product product = new Product();
         product.setName(productDto.getName());
         product.setStock(productDto.getStock());
@@ -134,7 +134,6 @@ public class ProductServiceImpl implements ProductService {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
-
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
         Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, status, pageable);
@@ -151,7 +150,6 @@ public class ProductServiceImpl implements ProductService {
         productResponse.setTotalPages(products.getTotalPages());
         productResponse.setLast(products.isLast());
         return productResponse;
-
 
     }
 
@@ -226,16 +224,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean updateProduct(ProductDto productDto, Long productId) {
+    public boolean updateProduct(ProductDto productDto, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
         product.setName(productDto.getName());
         product.setStock(productDto.getStock());
         product.setPrice(productDto.getPrice());
-
-
-
         product.setDescription(productDto.getDescription());
 
         String categoryName = productDto.getCategory().toUpperCase();
@@ -271,7 +266,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean deleteProduct(Long productId) {
+    public boolean deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
@@ -372,6 +367,54 @@ public class ProductServiceImpl implements ProductService {
         productResponseDto.setLast(products.isLast());
         return productResponseDto;
     }
+
+    @Override
+    public ProductResponse2Dto filterProductsByCategoryAndTypeAndBrand(Long categoryId, Long productTypeId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir){
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Product> products = productRepository.filterProductsByCategoryAndTypeAndBrand(categoryId, productTypeId, brandId, pageable);
+
+        List<Product> productList = products.getContent();
+
+        List<ProductListDto> content = productList.stream().map(this::mapToProductListDto).collect(Collectors.toList());
+
+        ProductResponse2Dto productResponseDto = new ProductResponse2Dto();
+        productResponseDto.setContent(content);
+        productResponseDto.setPageNo(products.getNumber());
+        productResponseDto.setPageSize(products.getSize());
+        productResponseDto.setTotalElements(products.getTotalElements());
+        productResponseDto.setTotalPages(products.getTotalPages());
+        productResponseDto.setLast(products.isLast());
+        return productResponseDto;
+    }
+
+    @Override
+    public ProductResponse2Dto customerPageGetProductByCategory(Long categoryId, String status, int pageNo, int pageSize, String sortBy, String sortDir){
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, status, pageable);
+
+        List<Product> productList = products.getContent();
+
+        List<ProductListDto> content = productList.stream().map(this::mapToProductListDto).collect(Collectors.toList());
+
+        ProductResponse2Dto productResponseDto = new ProductResponse2Dto();
+        productResponseDto.setContent(content);
+        productResponseDto.setPageNo(products.getNumber());
+        productResponseDto.setPageSize(products.getSize());
+        productResponseDto.setTotalElements(products.getTotalElements());
+        productResponseDto.setTotalPages(products.getTotalPages());
+        productResponseDto.setLast(products.isLast());
+        return productResponseDto;
+    }
+
 
 //    @Override
 //    public List<Product> searchProducts(String query) {

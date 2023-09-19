@@ -4,6 +4,7 @@ import com.busayo.ecommercebackend.dto.product.ProductDto;
 import com.busayo.ecommercebackend.dto.product.*;
 import com.busayo.ecommercebackend.service.ProductService;
 import com.busayo.ecommercebackend.utils.AppConstants;
+import com.busayo.ecommercebackend.utils.AppConstants2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public Boolean addProduct(@RequestBody ProductDto productDto) {
+    public boolean addProduct(@RequestBody ProductDto productDto) {
 
         return productService.addProduct(productDto);
     }
@@ -61,6 +62,18 @@ public class ProductController {
         return productService.getProductsByCategoryIdWithPaginationAndSorting(categoryId, status,pageNo, pageSize, sortBy, sortDir);
     }
 
+    @GetMapping("/customers/category/{id}/{status}")
+    public ProductResponse2Dto customerPageGetProductByCategory(
+            @PathVariable("id") Long categoryId,
+            @PathVariable String status,
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    ){
+        return productService.customerPageGetProductByCategory(categoryId, status,pageNo, pageSize, sortBy, sortDir);
+    }
+
     @GetMapping("/search/{category-id}/{product-type-id}/{status}")
     public ProductResponse3Dto getProductsByCategoryAndProductType(
             @PathVariable("category-id") Long categoryId,
@@ -73,7 +86,6 @@ public class ProductController {
     ){
         return productService.getProductsByCategoryAndProductType(categoryId, productTypeId, status,pageNo, pageSize, sortBy, sortDir);
     }
-
 
     @GetMapping("/category/{id}")
     public ResponseEntity<List<ProductByCategoryDto>> getProductsByCategory(@PathVariable("id") Long categoryId){
@@ -92,6 +104,21 @@ public class ProductController {
         return productService.getProductsByProductType(productTypeId, status, pageNo, pageSize, sortBy, sortDir);
     }
 
+
+    @GetMapping("/filter-products")
+    public ProductResponse2Dto getFilteredProducts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long productTypeId,
+            @RequestParam(required = false) Long brandId,
+            @RequestParam(value = "pageNo", defaultValue = AppConstants2.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants2.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants2.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants2.DEFAULT_SORT_DIRECTION, required = false) String sortDir)
+    {
+
+        return productService.filterProductsByCategoryAndTypeAndBrand(categoryId, productTypeId, brandId, pageNo, pageSize, sortBy, sortDir);
+    }
+
     @GetMapping("/product-type/{id}")
     public ResponseEntity<List<ProductByProductTypeDto>> getProductsByProductType(@PathVariable("id") Long productTypeId){
         return ResponseEntity.ok(productService.getProductsByProductTypeId(productTypeId));
@@ -99,9 +126,9 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/edit/{id}")
-    public ResponseEntity<Boolean> updateProduct(@RequestBody ProductDto productDto,
-                                                 @PathVariable("id") Long productIdId){
-        return ResponseEntity.ok(productService.updateProduct(productDto, productIdId));
+    public boolean updateProduct(@RequestBody ProductDto productDto,
+                                 @PathVariable("id") Long productIdId){
+        return productService.updateProduct(productDto, productIdId);
     }
 
     @GetMapping("/search")
@@ -114,26 +141,12 @@ public class ProductController {
         return productService.searchProducts(query,pageNo, pageSize, sortBy, sortDir);
     }
 
-    @GetMapping("/product-search/{status}")
-    public ProductResponse2Dto productSearchByCategoryAndTypeAndBrand(
-            @RequestParam("categoryName") String categoryName,
-            @RequestParam("productTypeName") String productTypeName,
-            @RequestParam("brandName") String brandName,
-            @PathVariable String status,
-            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
-
-    ){
-        return productService.productSearchByCategoryAndTypeAndBrand(categoryName, productTypeName, brandName, status,pageNo, pageSize, sortBy, sortDir);
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")
-    public ResponseEntity<Boolean> deleteProduct(@PathVariable Long id) {
+    public boolean deleteProduct(@PathVariable Long id) {
 
-        return ResponseEntity.ok(productService.deleteProduct(id));
+        return productService.deleteProduct(id);
     }
 
     @GetMapping("/best-selling")

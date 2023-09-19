@@ -5,7 +5,7 @@ import com.busayo.ecommercebackend.dto.product.*;
 import java.util.List;
 
 public interface ProductService {
-    Boolean addProduct(ProductDto productDto);
+    boolean addProduct(ProductDto productDto);
 
     ProductDto getProduct(Long productId);
 
@@ -23,9 +23,9 @@ public interface ProductService {
 
     List<ProductByProductTypeDto> getProductsByProductTypeId(Long productTypeId);
 
-    Boolean updateProduct(ProductDto productDto, Long productId);
+    boolean updateProduct(ProductDto productDto, Long productId);
 
-    Boolean deleteProduct(Long productId);
+    boolean deleteProduct(Long productId);
 
     ProductResponse2Dto searchProducts(String query, int pageNo, int pageSize, String sortBy, String sortDir);
 
@@ -34,5 +34,9 @@ public interface ProductService {
     ProductResponse5Dto getProductsByTotalQuantityDescending(int pageNo, int pageSize);
 
     ProductResponse5Dto getReviewedProducts(int pageNo, int pageSize, String sortBy, String sortDir);
+
+    ProductResponse2Dto customerPageGetProductByCategory(Long categoryId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
+
+    ProductResponse2Dto filterProductsByCategoryAndTypeAndBrand(Long categoryId, Long productTypeId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir);
 
 }

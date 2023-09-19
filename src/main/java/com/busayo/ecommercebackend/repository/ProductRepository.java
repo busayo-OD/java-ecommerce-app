@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -27,4 +28,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p " +
             "WHERE EXISTS (SELECT 1 FROM Review r WHERE r.product = p AND r.status = 'ACTIVE')")
     Page<Product> findReviewedProducts(Pageable pageable);
+
+    @Query(value = "SELECT * FROM products p " +
+            "WHERE (:categoryId IS NULL OR p.category_id = :categoryId) " +
+            "AND (:productTypeId IS NULL OR p.product_type_id = :productTypeId) " +
+            "AND (:brandId IS NULL OR p.brand_id = :brandId) " +
+            "AND p.status = 'Active'",
+            countQuery = "SELECT COUNT(*) FROM products p " +
+                    "WHERE (:categoryId IS NULL OR p.category_id = :categoryId) " +
+                    "AND (:productTypeId IS NULL OR p.product_type_id = :productTypeId) " +
+                    "AND (:brandId IS NULL OR p.brand_id = :brandId) " +
+                    "AND p.status = 'Active'",
+            nativeQuery = true)
+    Page<Product> filterProductsByCategoryAndTypeAndBrand(
+            @Param("categoryId") Long categoryId,
+            @Param("productTypeId") Long productTypeId,
+            @Param("brandId") Long brandId,
+            Pageable pageable);
+
 }
