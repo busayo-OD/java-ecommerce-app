@@ -32,7 +32,7 @@ public class ShippingMethodServiceImpl implements ShippingMethodService {
         shippingMethod.setStatus("Active");
         shippingMethod.setDescription(shippingMethodDto.getDescription());
         shippingMethod.setTimeRange(shippingMethodDto.getTimeRange());
-        shippingMethod.setPrice(shippingMethod.getPrice());
+        shippingMethod.setPrice(shippingMethodDto.getPrice());
         shippingMethodRepository.save(shippingMethod);
         return shippingMethod;
     }
@@ -56,16 +56,20 @@ public class ShippingMethodServiceImpl implements ShippingMethodService {
 
         ShippingMethod shippingMethod = shippingMethodRepository.findById(shippingMethodId)
                 .orElseThrow(() -> new ShippingMethodNotFoundException(shippingMethodId));
-        if (shippingMethodDto.getName() != null) {
+        if (!shippingMethodDto.getName().isEmpty()) {
             shippingMethod.setName(shippingMethodDto.getName());
         }
 
-        if (shippingMethodDto.getDescription() != null) {
+        if (!shippingMethodDto.getDescription().isEmpty()) {
             shippingMethod.setDescription(shippingMethodDto.getDescription());
         }
 
-        if (shippingMethodDto.getTimeRange() != null) {
+        if (!shippingMethodDto.getTimeRange().isEmpty()) {
             shippingMethod.setTimeRange(shippingMethodDto.getTimeRange());
+        }
+
+        if (!(shippingMethodDto.getPrice() == 0.0)) {
+            shippingMethod.setPrice(shippingMethodDto.getPrice());
         }
 
         shippingMethodRepository.save(shippingMethod);
