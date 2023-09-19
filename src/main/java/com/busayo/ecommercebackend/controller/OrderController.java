@@ -4,6 +4,7 @@ import com.busayo.ecommercebackend.dto.order.*;
 import com.busayo.ecommercebackend.service.OrderService;
 import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
+import com.busayo.ecommercebackend.utils.OrderListConstants;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +27,24 @@ public class OrderController {
         return orderService.placeOrder(userId, placeOrderDto);
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<OrderListDto> getOrder(@PathVariable("id") Long orderId){
+        OrderListDto order = orderService.getOrderById(orderId);
+        return  ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/summary/{id}")
+    public ResponseEntity<OrderReviewDto> getOrderReview(@PathVariable("id") Long orderId){
+        OrderReviewDto order = orderService.getOrderReview(orderId);
+        return  ResponseEntity.ok(order);
+    }
     @GetMapping("/pagination/{status}")
     public OrderListResponseDto getOrdersWithPaginationAndSorting(
             @PathVariable String status,
-            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+            @RequestParam(value = "pageNo", defaultValue = OrderListConstants.DEFAULT_PAGE_NO, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = OrderListConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = OrderListConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = OrderListConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ) {
         return orderService.getOrdersWithPaginationAndSorting(status, pageNo, pageSize, sortBy, sortDir);
     }
@@ -47,11 +59,5 @@ public class OrderController {
     public ResponseEntity<List<MyOrdersDto>> getMyOrders() {
         Long userId = CurrentUserUtil.getCurrentUser().getId();
         return ResponseEntity.ok(orderService.getMyOrders(userId));
-    }
-
-    @PutMapping("/billing-info/edit")
-    public void editBillingInfo(@RequestBody BillingInfoDto billingInfoDto) {
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
-        orderService.editBillingInfo(billingInfoDto, userId);
     }
 }

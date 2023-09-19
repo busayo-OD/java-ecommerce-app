@@ -3,12 +3,11 @@ package com.busayo.ecommercebackend.service.impl;
 import com.busayo.ecommercebackend.dto.cart.CartDto;
 import com.busayo.ecommercebackend.dto.cart.CartItemDto;
 import com.busayo.ecommercebackend.dto.order.*;
+import com.busayo.ecommercebackend.exception.OrderNotFoundException;
+import com.busayo.ecommercebackend.exception.ShippingMethodNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
 import com.busayo.ecommercebackend.model.*;
-import com.busayo.ecommercebackend.repository.NotificationRepository;
-import com.busayo.ecommercebackend.repository.OrderDetailsRepository;
-import com.busayo.ecommercebackend.repository.OrderRepository;
-import com.busayo.ecommercebackend.repository.UserRepository;
+import com.busayo.ecommercebackend.repository.*;
 import com.busayo.ecommercebackend.service.CartService;
 import com.busayo.ecommercebackend.service.OrderService;
 import org.modelmapper.ModelMapper;
@@ -30,79 +29,113 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
-    private  OrderRepository orderRepository;
+    OrderRepository orderRepository;
 
     @Autowired
-    private OrderDetailsRepository orderDetailsRepository;
+    OrderDetailsRepository orderDetailsRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    ModelMapper modelMapper;
 
     @Autowired
-    private CartService cartService;
+    CartService cartService;
 
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
-    private NotificationRepository notificationRepository;
+    NotificationRepository notificationRepository;
+
+    @Autowired
+    ShippingAddressRepository shippingAddressRepository;
+
+    @Autowired
+    ShippingMethodRepository shippingMethodRepository;
+
+    @Autowired
+    CouponRepository couponRepository;
 
     @Override
     public String placeOrder(Long userId, PlaceOrderDto placeOrderDto) {
-
         CartDto cartDto = cartService.getMyCart(userId);
-
         List<CartItemDto> cartItemDtoList = cartDto.getCartItems();
-
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (cartItemDtoList.isEmpty()) {
             return "Cart is empty";
         } else {
-            // create the order and save it
             Order newOrder = new Order();
+
+            // Set basic order properties
             newOrder.setOrderDate(new Date());
             newOrder.setUser(user);
-            newOrder.setAmount(cartDto.getTotal());
             newOrder.setOrderStatus("In Progress");
             newOrder.setPaymentStatus("NO");
             newOrder.setStatus("Active");
-            newOrder.setShippingAddress(placeOrderDto.getShippingAddress());
-            newOrder.setState(placeOrderDto.getState());
 
-            int min = 1000;
-            int max = 5000;
-            int randomNum = ThreadLocalRandom.current().nextInt(min, max + 1);
+            // Generate a random order number
+            int randomNum = ThreadLocalRandom.current().nextInt(1000, 10000);
             newOrder.setOrderNumber(randomNum);
+            ShippingAddress shippingAddress = createShippingAddress(placeOrderDto);
+
+            Long shippingMethodId = placeOrderDto.getShippingMethodId();
+            ShippingMethod shippingMethod = shippingMethodRepository.findById(shippingMethodId)
+                    .orElseThrow(() -> new ShippingMethodNotFoundException(shippingMethodId));
+
+            newOrder.setShippingAddress(shippingAddress);
+            newOrder.setShippingMethod(shippingMethod);
+
+            String couponCode = placeOrderDto.getCouponCode();
+            Coupon coupon = couponRepository.findByCouponCode(couponCode);
+            double discount = (coupon != null) ? coupon.getDiscountValue() : 0.0;
+            newOrder.setDiscount(discount);
+            newOrder.setAmount(cartDto.getTotal() - discount);
+
             orderRepository.save(newOrder);
 
-            for (CartItemDto cartItemDto : cartItemDtoList) {
-                // create orderItem and save each one
-                OrderDetail orderItem = new OrderDetail();
-//            orderItem.setCreatedDate(new Date());
-                orderItem.setSubTotal(cartItemDto.getProduct().getPrice() * cartItemDto.getQuantity());
-                orderItem.setProduct(cartItemDto.getProduct());
-                orderItem.setQuantity(cartItemDto.getQuantity());
-                orderItem.setOrder(newOrder);
-                orderItem.setStatus("Active");
-                // add to order item list
-                orderDetailsRepository.save(orderItem);
-            }
+            createAndSaveOrderItems(newOrder, cartItemDtoList);
             cartService.deleteUserCartItems(userId);
+            createAndSaveNotification(user, newOrder);
 
-            Notification notification = new Notification();
-
-            notification.setImage(user.getAvatar());
-            notification.setStatus("Active");
-            notification.setTitle("");
-            notification.setText("New order by " + user.getUsername() + " with order number " + newOrder.getOrderNumber());
-
-            notificationRepository.save(notification);
             return "Successful";
         }
+    }
 
+    private ShippingAddress createShippingAddress(PlaceOrderDto placeOrderDto) {
+        ShippingAddress shippingAddress = new ShippingAddress();
+        shippingAddress.setFirstname(placeOrderDto.getFirstname());
+        shippingAddress.setLastname(placeOrderDto.getLastname());
+        shippingAddress.setEmail(placeOrderDto.getEmail());
+        shippingAddress.setPhoneNumber(placeOrderDto.getPhoneNumber());
+        shippingAddress.setStreetAddress(placeOrderDto.getStreetAddress());
+        shippingAddress.setCity(placeOrderDto.getCity());
+        shippingAddress.setState(placeOrderDto.getState());
+        shippingAddress.setZipCode(placeOrderDto.getZipCode());
+        shippingAddressRepository.save(shippingAddress);
+        return shippingAddress;
+    }
+
+    private void createAndSaveOrderItems(Order newOrder, List<CartItemDto> cartItemDtoList) {
+        for (CartItemDto cartItemDto : cartItemDtoList) {
+            OrderDetail orderItem = new OrderDetail();
+            orderItem.setSubTotal(cartItemDto.getProduct().getPrice() * cartItemDto.getQuantity());
+            orderItem.setProduct(cartItemDto.getProduct());
+            orderItem.setQuantity(cartItemDto.getQuantity());
+
+            orderItem.setOrder(newOrder);
+            orderItem.setStatus("Active");
+            orderDetailsRepository.save(orderItem);
+        }
+    }
+
+    private void createAndSaveNotification(User user, Order newOrder) {
+        Notification notification = new Notification();
+        notification.setStatus("Active");
+        notification.setTitle(user.getFirstName() + " " + user.getLastName());
+        notification.setText("New order by " + user.getUsername() + " with order number " + newOrder.getOrderNumber());
+
+        notificationRepository.save(notification);
     }
 
     @Override
@@ -117,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<Order> orderList = orders.getContent();
 
-        List<OrderListDto> content = orderList.stream().map(order -> mapToOrderListDto(order)).collect(Collectors.toList());
+        List<OrderListDto> content = orderList.stream().map(this::mapToOrderListDto).collect(Collectors.toList());
 
         OrderListResponseDto orderListResponseDto = new OrderListResponseDto();
         orderListResponseDto.setContent(content);
@@ -133,14 +166,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderListDto> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
-        return orders.stream().map((order) -> mapToOrderListDto(order))
+        return orders.stream().map(this::mapToOrderListDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<MyOrdersDto> getMyOrders(Long userId) {
         List<Order> myOrders = orderRepository.findByUserId(userId);
-        return myOrders.stream().map((order) -> mapToMyOrdersDto(order))
+        return myOrders.stream().map(this::mapToMyOrdersDto)
                 .collect(Collectors.toList());
     }
 
@@ -156,6 +189,49 @@ public class OrderServiceImpl implements OrderService {
 
         userRepository.save(user);
     }
+
+    @Override
+    public OrderListDto getOrderById(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        return mapToOrderListDto(order);
+    }
+
+    @Override
+    public OrderReviewDto getOrderReview(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        return mapToOrderReviewDto(order);
+    }
+
+    private OrderReviewDto mapToOrderReviewDto(Order order) {
+        OrderReviewDto orderReviewDto = new OrderReviewDto();
+
+        // Calculate the total number of items in the order
+        int numberOfItems = 0;
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            numberOfItems += orderDetail.getQuantity();
+        }
+
+        double subtotal = order.getAmount();
+        double discount = order.getDiscount();
+        double shipping = order.getShippingMethod().getPrice();
+        double vat = 10;
+        double total = subtotal + shipping + vat - discount;
+
+        orderReviewDto.setNoOfItems(numberOfItems);
+        orderReviewDto.setSubtotal(subtotal);
+        orderReviewDto.setDiscount(discount);
+        orderReviewDto.setShipping(shipping);
+        orderReviewDto.setVat(vat);
+        orderReviewDto.setTotal(total);
+
+        return orderReviewDto;
+    }
+
+
 
     private OrderListDto mapToOrderListDto(Order order){
 

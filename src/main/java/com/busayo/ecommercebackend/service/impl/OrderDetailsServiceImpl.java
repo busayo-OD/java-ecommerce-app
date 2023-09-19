@@ -8,6 +8,7 @@ import com.busayo.ecommercebackend.dto.orderDetails.OrderDetailsDto;
 import com.busayo.ecommercebackend.exception.OrderNotFoundException;
 import com.busayo.ecommercebackend.model.Order;
 import com.busayo.ecommercebackend.model.OrderDetail;
+import com.busayo.ecommercebackend.model.ShippingAddress;
 import com.busayo.ecommercebackend.repository.OrderDetailsRepository;
 import com.busayo.ecommercebackend.repository.OrderRepository;
 import com.busayo.ecommercebackend.service.OrderDetailsService;
@@ -49,32 +50,11 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
     }
 
     @Override
-    public BillingInfoDto viewBillingInfo(Long orderId) {
-        BillingInfoDto billingInfo = new BillingInfoDto();
+    public ShippingAddress viewShippingAddress(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        billingInfo.setFirstName(order.getUser().getFirstName());
-        billingInfo.setLastName(order.getUser().getLastName());
-        billingInfo.setPhoneNumber(order.getUser().getPhoneNumber());
-        billingInfo.setAddress(order.getUser().getAddress());
-        billingInfo.setState(order.getUser().getState());
-
-        return billingInfo;
-    }
-
-    @Override
-    public ShippingAddressDto viewShippingAddress(Long orderId) {
-
-        ShippingAddressDto shippingAddress = new ShippingAddressDto();
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        shippingAddress.setShippingAddress(order.getShippingAddress());
-        shippingAddress.setState(order.getState());
-        return shippingAddress;
+        return order.getShippingAddress();
     }
 
     @Override

@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Setter
@@ -29,6 +30,17 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "shipping_address_id")
+    private ShippingAddress shippingAddress;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "shipping_method_id")
+    private ShippingMethod shippingMethod;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderDetail> orderDetails;
+
     @Column(name = "amount", nullable = false)
     private double amount;
 
@@ -46,11 +58,6 @@ public class Order {
 
     private String status;
 
-    @Column(name = "state")
-    private String state;
-
-    @Column(name = "shipping_address")
-    private String shippingAddress;
-
+    private double discount;
 }
 

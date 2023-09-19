@@ -10,4 +10,6 @@ public interface OrderService {
     List<OrderListDto> getAllOrders();
     List<MyOrdersDto> getMyOrders(Long userId);
     void editBillingInfo(BillingInfoDto billingAddressDto, Long userId);
+    OrderListDto getOrderById(Long orderId);
+    OrderReviewDto getOrderReview(Long orderId);
 }
