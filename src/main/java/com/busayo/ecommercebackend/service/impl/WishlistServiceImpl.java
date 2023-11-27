@@ -94,6 +94,12 @@ public class WishlistServiceImpl implements WishlistService {
 
     }
 
+    @Override
+    public void removeItemFromWishlist(Long id, Long userId) {
+        Wishlist wishlistItem = wishlistRepository.findByIdAndUserId(id, userId);
+        wishlistRepository.delete(wishlistItem);
+    }
+
     private MyWishlistDto mapToMyWishlistDto (Wishlist wishlist) {
 
         MyWishlistDto myWishlistDto = new MyWishlistDto();

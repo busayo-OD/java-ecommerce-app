@@ -10,4 +10,5 @@ public interface WishlistService {
     Boolean addProductToWishlist(WishlistDto wishlistDto, Long id);
     List<MyWishlistDto> getMyWishList(Long id);
     WishlistInfoResponseDto getAllWishlist(int pageNo, int pageSize, String sortBy, String sortDir);
+    void removeItemFromWishlist(Long id, Long userId);
 }

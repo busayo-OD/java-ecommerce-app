@@ -48,5 +48,12 @@ public class WishlistController {
         return wishlistService.getAllWishlist(pageNo, pageSize, sortBy, sortDir);
     }
 
+    @DeleteMapping("/remove/{id}")
+    public void removeItemFromWishlist(@PathVariable Long id){
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
+        wishlistService.removeItemFromWishlist(id, userId);
+
+    }
+
 }
 
