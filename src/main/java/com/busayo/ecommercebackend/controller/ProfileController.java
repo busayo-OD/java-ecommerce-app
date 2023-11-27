@@ -10,12 +10,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/profiles")
 public class ProfileController {
 
-    private ProfileService profileService;
+    private final ProfileService profileService;
 
     public ProfileController(ProfileService profileService) {
         this.profileService = profileService;
@@ -24,7 +25,7 @@ public class ProfileController {
     @GetMapping("/my-profile")
     @ResponseBody
     public ProfileDto getProfile(){
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
         return profileService.getProfile(userId);
     }
 
@@ -39,7 +40,7 @@ public class ProfileController {
     @PostMapping("/edit-profile")
     @ResponseBody
     public Boolean editProfile(@RequestBody UpdateProfileDto updateProfileDto){
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
         return profileService.editProfile(updateProfileDto, userId);
     }
 

@@ -2,26 +2,14 @@ package com.busayo.ecommercebackend.service;
 
 import com.busayo.ecommercebackend.dto.product.*;
 
-import java.util.List;
-
 public interface ProductService {
     boolean addProduct(ProductDto productDto);
 
-    ProductDto getProduct(Long productId);
+    ProductInfoDto getProduct(Long productId);
 
-    ProductResponse2Dto getProductsWithPaginationAndSorting(String status,int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse2Dto getProductsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir);
 
-    List<ProductListDto> getAllProducts();
-
-    ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
-
-    ProductResponse3Dto getProductsByCategoryAndProductType(Long categoryId, Long productTypeId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
-
-    List<ProductByCategoryDto> getProductsByCategoryId(Long categoryId);
-
-    ProductResponse2Dto getProductsByProductType(Long productTypeId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
-
-    List<ProductByProductTypeDto> getProductsByProductTypeId(Long productTypeId);
+    ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir);
 
     boolean updateProduct(ProductDto productDto, Long productId);
 
@@ -29,14 +17,14 @@ public interface ProductService {
 
     ProductResponse2Dto searchProducts(String query, int pageNo, int pageSize, String sortBy, String sortDir);
 
-    ProductResponse2Dto productSearchByCategoryAndTypeAndBrand(String categoryName, String productTypeName, String brandName, String status,  int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse2Dto productSearchByCategoryAndBrand(Long categoryId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir);
 
     ProductResponse5Dto getProductsByTotalQuantityDescending(int pageNo, int pageSize);
 
     ProductResponse5Dto getReviewedProducts(int pageNo, int pageSize, String sortBy, String sortDir);
 
-    ProductResponse2Dto customerPageGetProductByCategory(Long categoryId, String status, int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse2Dto customerPageGetProductByCategory(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir);
 
-    ProductResponse2Dto filterProductsByCategoryAndTypeAndBrand(Long categoryId, Long productTypeId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir);
+    ProductResponse2Dto filterProductsByCategoryAndBrand(Long categoryId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir);
 
 }

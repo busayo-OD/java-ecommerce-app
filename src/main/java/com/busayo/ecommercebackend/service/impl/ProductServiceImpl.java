@@ -1,19 +1,17 @@
 package com.busayo.ecommercebackend.service.impl;
 
 import com.busayo.ecommercebackend.dto.product.*;
+import com.busayo.ecommercebackend.exception.BrandNotFoundException;
+import com.busayo.ecommercebackend.exception.CategoryNotFoundException;
 import com.busayo.ecommercebackend.model.*;
 import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.repository.*;
 import com.busayo.ecommercebackend.service.ProductService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,24 +21,18 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductTypeRepository productTypeRepository;
     private final ProductImageRepository productImageRepository;
     private final OrderDetailsRepository orderDetailsRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     public ProductServiceImpl(ProductRepository productRepository,
                               BrandRepository brandRepository,
                               CategoryRepository categoryRepository,
-                              ProductTypeRepository productTypeRepository,
                               ProductImageRepository productImageRepository,
                               OrderDetailsRepository orderDetailsRepository
     ) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
-        this.productTypeRepository = productTypeRepository;
         this.productImageRepository = productImageRepository;
         this.orderDetailsRepository = orderDetailsRepository;
     }
@@ -56,16 +48,14 @@ public class ProductServiceImpl implements ProductService {
 
         product.setDescription(productDto.getDescription());
 
-        String categoryName = productDto.getCategory().toUpperCase();
-        Category category = categoryRepository.findByName(categoryName);
+        Long categoryId = productDto.getCategoryId();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
         product.setCategory(category);
 
-        String productTypeName = productDto.getProductType().toUpperCase();
-        ProductType productType = productTypeRepository.findByName(productTypeName);
-        product.setProductType(productType);
-
-        String brandName = productDto.getBrand().toUpperCase();
-        Brand brand = brandRepository.findByName(brandName);
+        Long brandId = productDto.getBrandId();
+        Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
         product.setBrand(brand);
 
         productRepository.save(product);
@@ -80,14 +70,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public  ProductDto getProduct (Long productId) {
+    public  ProductInfoDto getProduct (Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
-        return mapToProductDto(product);
+        return mapToProductInfoDto(product);
     }
 
     @Override
-    public ProductResponse2Dto getProductsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public ProductResponse2Dto getProductsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
@@ -95,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.findByStatus(status, pageable);
+        Page<Product> products = productRepository.findByStatus("Active", pageable);
 
         List<Product> productList = products.getContent();
 
@@ -112,31 +102,15 @@ public class ProductServiceImpl implements ProductService {
         return productResponseDto;
     }
 
-
-    private final List<Product> products = new ArrayList<>();
-
     @Override
-    public List<ProductListDto> getAllProducts() {
-        products.clear();
-        List<Product> allProducts = productRepository.findAll();
-        for (Product product : allProducts) {
-            if (product.getStatus().trim().equals("Active")) {
-                products.add(product);
-            }
-        }
-        return products.stream().map(this::mapToProductListDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, String status,int pageNo, int pageSize, String sortBy, String sortDir) {
+    public ProductResponse3Dto getProductsByCategoryIdWithPaginationAndSorting(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, status, pageable);
+        Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, "Active", pageable);
 
         List<Product> productList = products.getContent();
 
@@ -151,76 +125,6 @@ public class ProductServiceImpl implements ProductService {
         productResponse.setLast(products.isLast());
         return productResponse;
 
-    }
-
-    @Override
-    public ProductResponse3Dto getProductsByCategoryAndProductType(Long categoryId, Long productTypeId, String status, int pageNo, int pageSize, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-
-        Page<Product> products = productRepository.findByCategoryIdAndProductTypeIdAndStatus(categoryId, productTypeId, status, pageable);
-
-        List<Product> productList = products.getContent();
-
-        List<ProductByCategoryDto> content = productList.stream().map(this::mapToProductByCategoryDto).collect(Collectors.toList());
-
-        ProductResponse3Dto productResponse = new ProductResponse3Dto();
-        productResponse.setContent(content);
-        productResponse.setPageNo(products.getNumber());
-        productResponse.setPageSize(products.getSize());
-        productResponse.setTotalElements(products.getTotalElements());
-        productResponse.setTotalPages(products.getTotalPages());
-        productResponse.setLast(products.isLast());
-        return productResponse;
-    }
-
-    private final List<Product> productsByCategory = new ArrayList<>();
-    @Override
-    public List<ProductByCategoryDto> getProductsByCategoryId(Long categoryId) {
-        productsByCategory.clear();
-        List<Product> allProductsByCategory = productRepository.findByCategoryId(categoryId);
-        for (Product product : allProductsByCategory) {
-            if (product.getStatus().trim().equals("Active")) {
-                productsByCategory.add(product);
-            }
-        }
-        return productsByCategory.stream().map(this::mapToProductByCategoryDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public ProductResponse2Dto getProductsByProductType(Long productTypeId, String status, int pageNo, int pageSize, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-
-        Page<Product> products = productRepository.findByProductTypeIdAndStatus(productTypeId, status, pageable);
-
-        List<Product> productList = products.getContent();
-
-        List<ProductListDto> content = productList.stream().map(this::mapToProductListDto).collect(Collectors.toList());
-
-        ProductResponse2Dto productResponse = new ProductResponse2Dto();
-        productResponse.setContent(content);
-        productResponse.setPageNo(products.getNumber());
-        productResponse.setPageSize(products.getSize());
-        productResponse.setTotalElements(products.getTotalElements());
-        productResponse.setTotalPages(products.getTotalPages());
-        productResponse.setLast(products.isLast());
-        return productResponse;
-
-    }
-
-    @Override
-    public List<ProductByProductTypeDto> getProductsByProductTypeId(Long productTypeId) {
-        List<Product> products = productRepository.findByProductTypeId(productTypeId);
-        return products.stream().map(this::mapToProductByProductTypeDto)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -233,16 +137,14 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(productDto.getPrice());
         product.setDescription(productDto.getDescription());
 
-        String categoryName = productDto.getCategory().toUpperCase();
-        Category category = categoryRepository.findByName(categoryName);
+        Long categoryId = productDto.getCategoryId();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
         product.setCategory(category);
 
-        String productTypeName = productDto.getProductType().toUpperCase();
-        ProductType productType = productTypeRepository.findByName(productTypeName);
-        product.setProductType(productType);
-
-        String brandName = productDto.getBrand().toUpperCase();
-        Brand brand = brandRepository.findByName(brandName);
+        Long brandId = productDto.getBrandId();
+        Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
         product.setBrand(brand);
 
         productRepository.save(product);
@@ -336,23 +238,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse2Dto productSearchByCategoryAndTypeAndBrand(String categoryName, String productTypeName, String brandName, String status, int pageNo, int pageSize, String sortBy, String sortDir){
+    public ProductResponse2Dto productSearchByCategoryAndBrand(Long categoryId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir){
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
-
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Category category = categoryRepository.findByName(categoryName.trim().toUpperCase());
-        Long categoryId = category.getId();
-
-        ProductType productType = productTypeRepository.findByName(productTypeName.trim().toUpperCase());
-        Long productTypeId = productType.getId();
-
-        Brand brand = brandRepository.findByName(brandName.trim().toUpperCase());
-        Long brandId = brand.getId();
-
-        Page<Product> products = productRepository.findByCategoryIdAndProductTypeIdAndBrandIdAndStatus(categoryId, productTypeId, brandId, status, pageable);
+        Page<Product> products = productRepository.findByCategoryIdAndBrandIdAndStatus(categoryId, brandId, "Active", pageable);
 
         List<Product> productList = products.getContent();
 
@@ -369,14 +261,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse2Dto filterProductsByCategoryAndTypeAndBrand(Long categoryId, Long productTypeId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir){
+    public ProductResponse2Dto filterProductsByCategoryAndBrand(Long categoryId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir){
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.filterProductsByCategoryAndTypeAndBrand(categoryId, productTypeId, brandId, pageable);
+        Page<Product> products = productRepository.filterProductsByCategoryAndBrand(categoryId, brandId, pageable);
 
         List<Product> productList = products.getContent();
 
@@ -393,13 +285,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse2Dto customerPageGetProductByCategory(Long categoryId, String status, int pageNo, int pageSize, String sortBy, String sortDir){
+    public ProductResponse2Dto customerPageGetProductByCategory(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir){
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, status, pageable);
+        Page<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, "Active", pageable);
 
         List<Product> productList = products.getContent();
 
@@ -414,13 +306,6 @@ public class ProductServiceImpl implements ProductService {
         productResponseDto.setLast(products.isLast());
         return productResponseDto;
     }
-
-
-//    @Override
-//    public List<Product> searchProducts(String query) {
-//        List<Product> products = productRepository.searchProductsSQL(query);
-//        return products;
-//    }
 
     private ProductListDto mapToProductListDto(Product product){
 
@@ -428,14 +313,15 @@ public class ProductServiceImpl implements ProductService {
         productListDto.setId(product.getId());
         productListDto.setName(product.getName());
 
-        Brand brand = brandRepository.findById(product.getBrand().getId()).get();
+        Long brandId = product.getBrand().getId();
+        Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new BrandNotFoundException(brandId));
         productListDto.setBrand(brand.getName());
 
-        Category category = categoryRepository.findById(product.getCategory().getId()).get();
+        Long categoryId = product.getCategory().getId();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
         productListDto.setCategory(category.getName());
-
-        ProductType productType = productTypeRepository.findById(product.getProductType().getId()).get();
-        productListDto.setProductType(productType.getName());
 
         productListDto.setPrice(product.getPrice());
         productListDto.setImages(product.getImages().stream().map(this::mapToProductImageDto)
@@ -449,37 +335,21 @@ public class ProductServiceImpl implements ProductService {
         productByCategory.setId(product.getId());
         productByCategory.setProductName(product.getName());
         productByCategory.setStock(product.getStock());
-        productByCategory.setProductType(product.getProductType().getName());
         return productByCategory;
     }
 
-    private ProductByProductTypeDto mapToProductByProductTypeDto (Product product) {
-        ProductByProductTypeDto productByProductType = new ProductByProductTypeDto();
-        productByProductType.setId(product.getId());
-        productByProductType.setName(product.getName());
-        productByProductType.setStock(product.getStock());
-        productByProductType.setBrand(product.getBrand().getName());
-        productByProductType.setCategory(product.getCategory().getName());
-        productByProductType.setImages(product.getImages().stream().map(this::mapToProductImageDto)
+    private ProductInfoDto mapToProductInfoDto (Product product) {
+        ProductInfoDto productInfoDto = new ProductInfoDto();
+        productInfoDto.setId(product.getId());
+        productInfoDto.setName(product.getName());
+        productInfoDto.setStock(product.getStock());
+        productInfoDto.setImages(product.getImages().stream().map(this::mapToProductImageDto)
                 .collect(Collectors.toList()));
-        productByProductType.setPrice(product.getPrice());
-        productByProductType.setDescription(product.getDescription());
-        return productByProductType;
-    }
-
-    private ProductDto mapToProductDto (Product product) {
-        ProductDto productDto = new ProductDto();
-        productDto.setId(product.getId());
-        productDto.setName(product.getName());
-        productDto.setStock(product.getStock());
-        productDto.setImages(product.getImages().stream().map(this::mapToProductImageDto)
-                .collect(Collectors.toList()));
-        productDto.setBrand(product.getBrand().getName());
-        productDto.setProductType(product.getProductType().getName());
-        productDto.setCategory(product.getCategory().getName());
-        productDto.setPrice(product.getPrice());
-        productDto.setDescription(product.getDescription());
-        return productDto;
+        productInfoDto.setBrand(product.getBrand().getName());
+        productInfoDto.setCategory(product.getCategory().getName());
+        productInfoDto.setPrice(product.getPrice());
+        productInfoDto.setDescription(product.getDescription());
+        return productInfoDto;
     }
 
     private ProductImageDto mapToProductImageDto (ProductImage productImage){

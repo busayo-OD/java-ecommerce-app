@@ -8,16 +8,14 @@ import lombok.Setter;
 @Setter
 @Getter
 public class CartItemDto {
-    private Long id;
     private int quantity;
-    private Product product;
+    private Long productId;
 
     public CartItemDto() {
     }
 
     public CartItemDto(Cart cart) {
-        this.setId(cart.getId());
         this.setQuantity(cart.getQuantity());
-        this.setProduct(cart.getProduct());
+        this.setProductId(cart.getProduct().getId());
     }
 }

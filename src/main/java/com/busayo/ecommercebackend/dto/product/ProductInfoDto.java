@@ -14,6 +14,11 @@ import java.util.List;
 public class ProductInfoDto {
     private Long id;
     private String name;
-    private List<ProductImageDto> images;
     private double price;
+    private String description;
+    private List<ProductImageDto> images;
+    private int stock;
+    private String brand;
+    private String category;
+    private String colour;
 }

@@ -20,9 +20,8 @@ public class ProductDto {
     private double price;
     private List<ProductImageDto> images;
     private int stock;
-    private String brand;
-    private String productType;
-    private String category;
+    private Long brandId;
+    private Long categoryId;
     private String colour;
 
 }

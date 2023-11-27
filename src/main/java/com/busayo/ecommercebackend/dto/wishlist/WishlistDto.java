@@ -7,10 +7,5 @@ import lombok.Setter;
 @Getter
 public class WishlistDto {
     private Long id;
-
     private Long productId;
-
-    private Long basketId;
-
-    private int quantity;
 }

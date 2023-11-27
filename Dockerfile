@@ -12,6 +12,6 @@ WORKDIR /usr/src/app
 
 EXPOSE 8180
 
-COPY --from=build /usr/src/app/target/ecomm-backend-0.0.1-SNAPSHOT.jar ./app.jar
+COPY --from=build /usr/src/app/target/ecommerce-backend-0.0.1-SNAPSHOT.jar ./app.jar
 
 ENTRYPOINT ["java","-jar", "./app.jar"]

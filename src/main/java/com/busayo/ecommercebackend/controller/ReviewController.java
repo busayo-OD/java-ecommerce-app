@@ -5,7 +5,6 @@ import com.busayo.ecommercebackend.dto.review.ReviewDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoDto;
 import com.busayo.ecommercebackend.dto.review.ReviewInfoResponseDto;
 import com.busayo.ecommercebackend.service.ReviewService;
-import com.busayo.ecommercebackend.utils.AppConstants;
 import com.busayo.ecommercebackend.utils.CurrentUserUtil;
 import com.busayo.ecommercebackend.utils.ReviewConstants;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/reviews")
@@ -26,7 +26,7 @@ public class ReviewController {
 
     @PostMapping("/add")
     public Boolean addReview(@RequestBody ReviewDto reviewDto){
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
 
         return reviewService.addReview(reviewDto, userId);
     }
@@ -40,7 +40,7 @@ public class ReviewController {
 
     @PutMapping("/edit")
     public ResponseEntity<Boolean> updateReview(@RequestBody ReviewDto reviewDto){
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
         return ResponseEntity.ok(reviewService.updateReview(reviewDto, userId));
     }
 
@@ -75,7 +75,7 @@ public class ReviewController {
 
     @DeleteMapping("/delete/{id}")
     public void deleteReview(@PathVariable Long id) {
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
         reviewService.deleteReview(id, userId);
     }
 }

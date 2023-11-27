@@ -9,9 +9,8 @@ import java.util.List;
 public interface CouponService {
     Boolean addCoupon(CouponDto couponDto);
     Coupon getCoupon(Long couponId);
-    List<Coupon> getAllCoupon();
-    CouponResponseDto getCouponsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir);
+    CouponResponseDto getCouponsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir);
     Boolean updateCoupon(CouponDto couponDto, Long couponId);
     Boolean deleteCoupon(Long couponId);
-    CouponResponseDto getCouponsByStatus(String couponStatus, String status, int pageNo, int pageSize, String sortBy, String sortDir);
+    CouponResponseDto getCouponsByStatus(String couponStatus, int pageNo, int pageSize, String sortBy, String sortDir);
 }

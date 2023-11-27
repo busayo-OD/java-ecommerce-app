@@ -1,16 +1,13 @@
 package com.busayo.ecommercebackend.service.impl;
 
-import com.busayo.ecommercebackend.dto.cart.CartDto;
-import com.busayo.ecommercebackend.dto.cart.CartItemDto;
 import com.busayo.ecommercebackend.dto.order.*;
 import com.busayo.ecommercebackend.exception.OrderNotFoundException;
+import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.exception.ShippingMethodNotFoundException;
 import com.busayo.ecommercebackend.exception.UserNotFoundException;
 import com.busayo.ecommercebackend.model.*;
 import com.busayo.ecommercebackend.repository.*;
-import com.busayo.ecommercebackend.service.CartService;
 import com.busayo.ecommercebackend.service.OrderService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,10 +32,7 @@ public class OrderServiceImpl implements OrderService {
     OrderDetailsRepository orderDetailsRepository;
 
     @Autowired
-    ModelMapper modelMapper;
-
-    @Autowired
-    CartService cartService;
+    ProductRepository productRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -57,14 +51,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public String placeOrder(Long userId, PlaceOrderDto placeOrderDto) {
-        CartDto cartDto = cartService.getMyCart(userId);
-        List<CartItemDto> cartItemDtoList = cartDto.getCartItems();
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        if (cartItemDtoList.isEmpty()) {
-            return "Cart is empty";
-        } else {
             Order newOrder = new Order();
 
             // Set basic order properties
@@ -90,16 +80,30 @@ public class OrderServiceImpl implements OrderService {
             Coupon coupon = couponRepository.findByCouponCode(couponCode);
             double discount = (coupon != null) ? coupon.getDiscountValue() : 0.0;
             newOrder.setDiscount(discount);
-            newOrder.setAmount(cartDto.getTotal() - discount);
+            newOrder.setAmount(placeOrderDto.getSubtotal() - discount);
 
             orderRepository.save(newOrder);
 
-            createAndSaveOrderItems(newOrder, cartItemDtoList);
-            cartService.deleteUserCartItems(userId);
+            saveOrderDetails(placeOrderDto, newOrder);
+
             createAndSaveNotification(user, newOrder);
 
             return "Successful";
-        }
+
+    }
+
+    private void saveOrderDetails(PlaceOrderDto placeOrderDto, Order order) {
+        placeOrderDto.getCartItems().forEach(cartDto -> {
+            OrderDetail orderDetail1 = new OrderDetail();
+            orderDetail1.setOrder(order);
+            Long productId = cartDto.getProductId();
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId));
+            orderDetail1.setProduct(product);
+            orderDetail1.setQuantity(cartDto.getQuantity());
+            orderDetail1.setSubTotal(product.getPrice() * cartDto.getQuantity());
+            orderDetailsRepository.save(orderDetail1);
+        });
     }
 
     private ShippingAddress createShippingAddress(PlaceOrderDto placeOrderDto) {
@@ -114,19 +118,6 @@ public class OrderServiceImpl implements OrderService {
         shippingAddress.setZipCode(placeOrderDto.getZipCode());
         shippingAddressRepository.save(shippingAddress);
         return shippingAddress;
-    }
-
-    private void createAndSaveOrderItems(Order newOrder, List<CartItemDto> cartItemDtoList) {
-        for (CartItemDto cartItemDto : cartItemDtoList) {
-            OrderDetail orderItem = new OrderDetail();
-            orderItem.setSubTotal(cartItemDto.getProduct().getPrice() * cartItemDto.getQuantity());
-            orderItem.setProduct(cartItemDto.getProduct());
-            orderItem.setQuantity(cartItemDto.getQuantity());
-
-            orderItem.setOrder(newOrder);
-            orderItem.setStatus("Active");
-            orderDetailsRepository.save(orderItem);
-        }
     }
 
     private void createAndSaveNotification(User user, Order newOrder) {

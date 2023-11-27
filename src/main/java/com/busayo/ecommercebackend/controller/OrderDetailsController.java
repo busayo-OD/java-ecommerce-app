@@ -27,11 +27,6 @@ public class OrderDetailsController {
         return ResponseEntity.ok(orderDetailsService.getOrderItems(orderId));
     }
 
-//    @GetMapping("/billing-info/{id}")
-//    public ResponseEntity<BillingInfoDto> getBillingInfo(@PathVariable("id") Long orderId){
-//        return ResponseEntity.ok(orderDetailsService.viewBillingInfo(orderId));
-//    }
-
     @GetMapping("/shipping-address/{id}")
     public ResponseEntity<ShippingAddress> getShippingAddress(@PathVariable("id") Long orderId){
         return ResponseEntity.ok(orderDetailsService.viewShippingAddress(orderId));

@@ -1,8 +1,6 @@
 package com.busayo.ecommercebackend.service.impl;
 
-import com.busayo.ecommercebackend.dto.order.BillingInfoDto;
 import com.busayo.ecommercebackend.dto.order.ContactInfoDto;
-import com.busayo.ecommercebackend.dto.order.ShippingAddressDto;
 import com.busayo.ecommercebackend.dto.orderDetails.OrderDetails2Dto;
 import com.busayo.ecommercebackend.dto.orderDetails.OrderDetailsDto;
 import com.busayo.ecommercebackend.exception.OrderNotFoundException;
@@ -20,8 +18,8 @@ import java.util.List;
 @Service
 public class OrderDetailsServiceImpl implements OrderDetailsService {
 
-    private OrderDetailsRepository orderDetailsRepository;
-    private OrderRepository orderRepository;
+    private final OrderDetailsRepository orderDetailsRepository;
+    private final OrderRepository orderRepository;
 
     public OrderDetailsServiceImpl(OrderDetailsRepository orderDetailsRepository,
                                    OrderRepository orderRepository) {

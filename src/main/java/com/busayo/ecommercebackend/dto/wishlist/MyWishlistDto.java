@@ -11,12 +11,6 @@ import java.util.Date;
 @Getter
 public class MyWishlistDto {
     private Long id;
-
     private Product product;
-
-    private WishlistBasket wishlistType;;
-
-    private int quantity;
-
     private Date createdDate;
 }

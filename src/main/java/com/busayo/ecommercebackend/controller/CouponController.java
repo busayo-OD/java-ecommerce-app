@@ -33,32 +33,25 @@ public class CouponController {
         return  ResponseEntity.ok(coupon);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Coupon>> getAllCoupons(){
-        return ResponseEntity.ok(couponService.getAllCoupon());
-    }
-
-    @GetMapping("/pagination/{status}")
+    @GetMapping("/pagination")
     public CouponResponseDto getCouponsWithPaginationAndSorting(
-            @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants2.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants2.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants2.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants2.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return couponService.getCouponsWithPaginationAndSorting(status, pageNo, pageSize, sortBy, sortDir);
+        return couponService.getCouponsWithPaginationAndSorting(pageNo, pageSize, sortBy, sortDir);
     }
 
-    @GetMapping("/status/{coupon-status}/{status}")
+    @GetMapping("/status/{coupon-status}")
     public CouponResponseDto getCouponsByStatus(
             @PathVariable("coupon-status") String couponStatus,
-            @PathVariable String status,
             @RequestParam(value = "pageNo", defaultValue = AppConstants2.DEFAULT_PAGE_NO, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = AppConstants2.DEFAULT_PAGE_SIZE, required = false) int pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants2.DEFAULT_SORT_BY, required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = AppConstants2.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ){
-        return couponService.getCouponsByStatus(couponStatus, status, pageNo, pageSize, sortBy, sortDir);
+        return couponService.getCouponsByStatus(couponStatus, pageNo, pageSize, sortBy, sortDir);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

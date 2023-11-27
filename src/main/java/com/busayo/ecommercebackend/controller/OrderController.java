@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/orders")
@@ -23,7 +24,7 @@ public class OrderController {
 
     @PostMapping("/place-order")
     public String placeOrder(@RequestBody PlaceOrderDto placeOrderDto) {
-        Long userId = CurrentUserUtil.getCurrentUser().getId();
+        Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
         return orderService.placeOrder(userId, placeOrderDto);
     }
 

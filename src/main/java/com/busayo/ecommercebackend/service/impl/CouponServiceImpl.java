@@ -12,14 +12,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class CouponServiceImpl implements CouponService {
 
-    private CouponRepository couponRepository;
+    private final CouponRepository couponRepository;
 
     public CouponServiceImpl(CouponRepository couponRepository) {
         this.couponRepository = couponRepository;
@@ -51,30 +50,15 @@ public class CouponServiceImpl implements CouponService {
         return coupon;
     }
 
-    private final List<Coupon> coupons = new ArrayList<>();
-
     @Override
-    public List<Coupon> getAllCoupon() {
-        coupons.clear();
-        List<Coupon> allCoupons = couponRepository.findAll();
-
-        for (Coupon coupon : allCoupons) {
-            if (coupon.getStatus().trim().equals("Active")) {
-                coupons.add(coupon);
-            }
-        }
-        return coupons;
-    }
-
-    @Override
-    public CouponResponseDto getCouponsWithPaginationAndSorting(String status, int pageNo, int pageSize, String sortBy, String sortDir) {
+    public CouponResponseDto getCouponsWithPaginationAndSorting(int pageNo, int pageSize, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Coupon> coupons = couponRepository.findByStatus(status, pageable);
+        Page<Coupon> coupons = couponRepository.findByStatus("Active", pageable);
 
         List<Coupon> couponList = coupons.getContent();
 
@@ -92,14 +76,14 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public CouponResponseDto getCouponsByStatus(String couponStatus, String status, int pageNo, int pageSize, String sortBy, String sortDir){
+    public CouponResponseDto getCouponsByStatus(String couponStatus, int pageNo, int pageSize, String sortBy, String sortDir){
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        Page<Coupon> coupons = couponRepository.findByCouponStatusAndStatus(couponStatus.toUpperCase(), status, pageable);
+        Page<Coupon> coupons = couponRepository.findByCouponStatusAndStatus(couponStatus.toUpperCase(), "Active", pageable);
 
         List<Coupon> couponList = coupons.getContent();
 

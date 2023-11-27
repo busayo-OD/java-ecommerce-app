@@ -32,9 +32,4 @@ public class Wishlist {
     @Column(name = "created_date")
     private Date createdDate;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "basket_id")
-    private WishlistBasket basket;
-
-    private int quantity;
 }

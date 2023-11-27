@@ -70,8 +70,12 @@ public class CartServiceImpl implements CartService {
             cartItems.add(cartItemDto);
         }
         double total = 0;
+
         for (CartItemDto cartItemDto :cartItems){
-            total += (cartItemDto.getProduct().getPrice()* cartItemDto.getQuantity());
+            Long productId = cartItemDto.getProductId();
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId));
+            total += (product.getPrice()* cartItemDto.getQuantity());
         }
         return new CartDto(cartItems,total);
     }
