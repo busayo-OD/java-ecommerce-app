@@ -2,7 +2,9 @@ package com.busayo.ecommercebackend.service.impl;
 
 import com.busayo.ecommercebackend.dto.brand.BrandDto;
 import com.busayo.ecommercebackend.dto.brand.BrandInfoDto;
+import com.busayo.ecommercebackend.exception.BrandDuplicateException;
 import com.busayo.ecommercebackend.exception.BrandNotFoundException;
+import com.busayo.ecommercebackend.exception.CategoryDuplicateException;
 import com.busayo.ecommercebackend.model.Brand;
 import com.busayo.ecommercebackend.repository.BrandRepository;
 import com.busayo.ecommercebackend.repository.CategoryRepository;
@@ -18,19 +20,21 @@ import java.util.stream.Collectors;
 public class BrandServiceImpl implements BrandService {
 
     private final BrandRepository brandRepository;
-    private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
 
     public BrandServiceImpl(BrandRepository brandRepository,
-                            CategoryRepository categoryRepository,
                             ModelMapper modelMapper) {
         this.brandRepository = brandRepository;
-        this.categoryRepository = categoryRepository;
         this.modelMapper = modelMapper;
     }
 
     @Override
     public void addBrand(BrandDto brandDto) {
+        boolean existingName = brandRepository.existsByName(brandDto.getName().toUpperCase());
+
+        if (existingName) {
+            throw new BrandDuplicateException();
+        }
         Brand brand = new Brand();
         brand.setName(brandDto.getName().toUpperCase());
         brand.setStatus("Active");

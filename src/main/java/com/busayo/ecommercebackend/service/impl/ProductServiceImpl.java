@@ -1,10 +1,8 @@
 package com.busayo.ecommercebackend.service.impl;
 
 import com.busayo.ecommercebackend.dto.product.*;
-import com.busayo.ecommercebackend.exception.BrandNotFoundException;
-import com.busayo.ecommercebackend.exception.CategoryNotFoundException;
+import com.busayo.ecommercebackend.exception.*;
 import com.busayo.ecommercebackend.model.*;
-import com.busayo.ecommercebackend.exception.ProductNotFoundException;
 import com.busayo.ecommercebackend.repository.*;
 import com.busayo.ecommercebackend.service.ProductService;
 import org.springframework.data.domain.Page;
@@ -39,6 +37,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean addProduct(ProductDto productDto) {
+        boolean existingName = productRepository.existsByName(productDto.getName().toUpperCase());
+
+        if (existingName) {
+            throw new ProductDuplicateException();
+        }
         Product product = new Product();
         product.setName(productDto.getName());
         product.setStock(productDto.getStock());
@@ -59,13 +62,6 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(brand);
 
         productRepository.save(product);
-
-        productDto.getImages().forEach(image -> {
-            ProductImage productImage = new ProductImage();
-            productImage.setImage(image.getImage());
-            productImage.setProduct(product);
-            productImageRepository.save(productImage);
-        });
         return  true;
     }
 
@@ -132,37 +128,49 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        product.setName(productDto.getName());
-        product.setStock(productDto.getStock());
-        product.setPrice(productDto.getPrice());
-        product.setDescription(productDto.getDescription());
+        if (productDto.getName() != null && !productDto.getName().isEmpty()) {
+            product.setName(productDto.getName());
+        }
+
+        if (productDto.getStock() != 0) {
+            product.setStock(productDto.getStock());
+        }
+
+        if (productDto.getPrice() != 0.0) {
+            product.setPrice(productDto.getPrice());
+        }
+
+        if (productDto.getDescription() != null && !productDto.getDescription().isEmpty()) {
+            product.setDescription(productDto.getDescription());
+        }
 
         Long categoryId = productDto.getCategoryId();
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
-        product.setCategory(category);
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+            product.setCategory(category);
+        }
 
         Long brandId = productDto.getBrandId();
-        Brand brand = brandRepository.findById(brandId)
-                .orElseThrow(() -> new BrandNotFoundException(brandId));
-        product.setBrand(brand);
+        if (brandId != null) {
+            Brand brand = brandRepository.findById(brandId)
+                    .orElseThrow(() -> new BrandNotFoundException(brandId));
+            product.setBrand(brand);
+        }
 
         productRepository.save(product);
+        return true;
+    }
 
-        productDto.getImages().forEach(image -> {
-            ProductImage existingImage = productImageRepository.findByImage(image.getImage());
-            if(existingImage == null){
-                ProductImage productImage = new ProductImage();
-                productImage.setImage(image.getImage());
-                productImage.setProduct(product);
-                productImageRepository.save(productImage);
-            }
-            else if ( !existingImage.getProduct().getId().equals(product.getId())) {
-                ProductImage productImage = new ProductImage();
-                productImage.setImage(image.getImage());
-                productImage.setProduct(product);
-                productImageRepository.save(productImage);
-            }
+    @Override
+    public boolean uploadProductImages(Long productId, ProductImagesDto productImages){
+        productImages.getImages().forEach(image -> {
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId));
+            ProductImage productImage = new ProductImage();
+            productImage.setImage(image.getImage());
+            productImage.setProduct(product);
+            productImageRepository.save(productImage);
         });
         return true;
     }

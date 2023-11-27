@@ -27,4 +27,6 @@ public interface ProductService {
 
     ProductResponse2Dto filterProductsByCategoryAndBrand(Long categoryId, Long brandId, int pageNo, int pageSize, String sortBy, String sortDir);
 
+    boolean uploadProductImages(Long productId, ProductImagesDto productImages);
+
 }

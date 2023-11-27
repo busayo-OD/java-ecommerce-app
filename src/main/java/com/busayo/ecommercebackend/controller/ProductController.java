@@ -120,4 +120,10 @@ public class ProductController {
         return productService.getReviewedProducts(pageNo, pageSize, sortBy, sortDir);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/upload-images/{id}")
+    public boolean uploadProductImages(@PathVariable Long id ,@RequestBody ProductImagesDto productImagesDto){
+        return productService.uploadProductImages( id, productImagesDto);
+    }
+
 }

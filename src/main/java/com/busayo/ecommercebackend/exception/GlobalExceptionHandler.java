@@ -23,6 +23,28 @@ public class GlobalExceptionHandler{
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(BrandDuplicateException.class)
+    public Object duplicate(BrandDuplicateException ex) {
+        final Map<String, Object> errors = new HashMap<>();
+        errors.put("entityName", BrandDuplicateException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.CONFLICT.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ProductDuplicateException.class)
+    public Object duplicate(ProductDuplicateException ex) {
+        final Map<String, Object> errors = new HashMap<>();
+        errors.put("entityName", ProductDuplicateException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.CONFLICT.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(CartItemNotFoundException.class)
     public Object duplicate(CartItemNotFoundException ex) {
         final Map<String, Object> errors = new HashMap<>();
