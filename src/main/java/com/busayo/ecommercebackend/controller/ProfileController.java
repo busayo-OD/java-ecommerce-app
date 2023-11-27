@@ -37,8 +37,7 @@ public class ProfileController {
         return profileService.getCustomerProfile(getProfileDto.getEmail());
     }
 
-    @PostMapping("/edit-profile")
-    @ResponseBody
+    @PutMapping("/edit-profile")
     public Boolean editProfile(@RequestBody UpdateProfileDto updateProfileDto){
         Long userId = Objects.requireNonNull(CurrentUserUtil.getCurrentUser()).getId();
         return profileService.editProfile(updateProfileDto, userId);

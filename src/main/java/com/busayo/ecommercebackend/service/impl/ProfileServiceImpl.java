@@ -52,16 +52,34 @@ public class ProfileServiceImpl implements ProfileService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        user.setFirstName(updateProfileDto.getFirstName());
-        user.setLastName(updateProfileDto.getLastName());
-        user.setAddress(updateProfileDto.getAddress());
-        user.setAvatar(updateProfileDto.getAvatar());
-//        user.setUsername(updateProfileDto.getUsername());
-        user.setState(updateProfileDto.getState());
-        user.setCountry(updateProfileDto.getCountry());
-        user.setPhoneNumber(updateProfileDto.getPhoneNumber());
-        userRepository.save(user);
+        if (!updateProfileDto.getFirstName().isEmpty()){
+            user.setFirstName(updateProfileDto.getFirstName());
+        }
+        if (!updateProfileDto.getLastName().isEmpty()){
+            user.setLastName(updateProfileDto.getLastName());
+        }
+        if (!updateProfileDto.getAddress().isEmpty()){
+            user.setAddress(updateProfileDto.getAddress());
+        }
+        if (!updateProfileDto.getAvatar().isEmpty()){
+            user.setAvatar(updateProfileDto.getAvatar());
+        }
 
+        if (!updateProfileDto.getCity().isEmpty()){
+            user.setCity(updateProfileDto.getCity());
+        }
+
+        if (!updateProfileDto.getState().isEmpty()){
+            user.setState(updateProfileDto.getState());
+        }
+        if (!updateProfileDto.getCountry().isEmpty()){
+            user.setCountry(updateProfileDto.getCountry());
+        }
+        if (!updateProfileDto.getPhoneNumber().isEmpty()){
+            user.setPhoneNumber(updateProfileDto.getPhoneNumber());
+        }
+
+        userRepository.save(user);
         return true;
     }
 
