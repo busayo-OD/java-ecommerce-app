@@ -10,7 +10,7 @@ FROM adoptopenjdk/openjdk11
 
 WORKDIR /usr/src/app
 
-EXPOSE 8180
+EXPOSE 8082
 
 COPY --from=build /usr/src/app/target/ecommerce-backend-0.0.1-SNAPSHOT.jar ./app.jar
 
