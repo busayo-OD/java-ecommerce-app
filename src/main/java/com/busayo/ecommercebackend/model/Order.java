@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -53,6 +54,11 @@ public class Order {
     @Temporal(TemporalType.DATE)
     @Column(name = "order_date")
     private Date orderDate;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_on", updatable = false, nullable = false)
+    private Date createdOn;
 
     private String paymentType;
 

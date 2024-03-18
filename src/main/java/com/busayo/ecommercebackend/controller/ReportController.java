@@ -1,10 +1,9 @@
 package com.busayo.ecommercebackend.controller;
 
+import com.busayo.ecommercebackend.dto.order.StatisticsResponseDto;
 import com.busayo.ecommercebackend.service.ReportService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/reports")
@@ -38,5 +37,11 @@ public class ReportController {
     @ResponseBody
     public int numberOfOrders() {
         return reportService.numberOfAllOrders();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/orders/size")
+    public StatisticsResponseDto totalNumberOfOrders(@RequestParam(name = "dateFilter", required = false) String dateFilter) {
+        return reportService.totalNumberOfAllOrders(dateFilter);
     }
 }

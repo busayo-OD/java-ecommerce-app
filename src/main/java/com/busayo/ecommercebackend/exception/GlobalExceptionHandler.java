@@ -241,5 +241,16 @@ public class GlobalExceptionHandler{
         return errors;
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidDateFilterException.class)
+    public Object invalidity(InvalidDateFilterException ex) {
+        final Map<String, Object> errors = new HashMap<String, Object>();
+        errors.put("entityName", InvalidDateFilterException.ENTITY_NAME);
+        errors.put("message", ex.getMessage());
+        ex.setCode(HttpStatus.BAD_REQUEST.value());
+        errors.put("code", ex.getCode().toString());
+        return errors;
+    }
+
 }
 
