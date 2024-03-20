@@ -1,5 +1,6 @@
 package com.busayo.ecommercebackend.controller;
 
+import com.busayo.ecommercebackend.dto.order.StatisticsResponse2Dto;
 import com.busayo.ecommercebackend.dto.order.StatisticsResponseDto;
 import com.busayo.ecommercebackend.service.ReportService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,28 +16,22 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    @GetMapping("/numberofproducts")
-    @ResponseBody
-    public int numberOfProducts() {
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/products/size")
+    public StatisticsResponseDto numberOfProducts() {
         return reportService.numberOfAllProducts();
     }
 
-    @GetMapping("/numberofusers")
-    @ResponseBody
-    public int numberOfUsers() {
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/users/size")
+    public StatisticsResponseDto numberOfUsers() {
         return reportService.numberOfAllUsers();
     }
 
-    @GetMapping("/totalrevenue")
-    @ResponseBody
-    public double totalRevenue(){
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/revenue/sum")
+    public StatisticsResponse2Dto totalRevenue(){
         return reportService.totalRevenue();
-    }
-
-    @GetMapping("/numberoforders")
-    @ResponseBody
-    public int numberOfOrders() {
-        return reportService.numberOfAllOrders();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
